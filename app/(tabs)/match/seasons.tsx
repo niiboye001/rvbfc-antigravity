@@ -5,19 +5,29 @@ export default function SeasonsScreen() {
     const { seasons } = useLeague();
 
     return (
-        <View className="flex-1 bg-secondary p-4">
-            <Text className="font-bold text-lg text-primary mb-4">Past Seasons</Text>
+        <View className="flex-1 bg-secondary">
             <FlatList
                 data={seasons}
                 keyExtractor={item => item.id}
+                contentContainerStyle={{ padding: 24 }}
                 renderItem={({ item }) => (
-                    <View className="bg-white p-5 rounded-xl shadow-sm mb-3">
-                        <Text className="font-bold text-slate-800 text-lg">{item.name}</Text>
-                        <Text className="text-slate-500 text-base">Year: {item.year}</Text>
+                    <View className="bg-white p-6 rounded-2xl mb-4 border border-slate-50 relative overflow-hidden">
+                        <View className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-[60px]" />
+                        <View className="flex-row justify-between items-center">
+                            <View>
+                                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-1">League Season</Text>
+                                <Text className="text-2xl font-black text-slate-900">{item.name}</Text>
+                            </View>
+                            <View className="bg-slate-50 px-4 py-2 rounded-2xl">
+                                <Text className="text-blue-500 font-black text-sm">{item.year}</Text>
+                            </View>
+                        </View>
                     </View>
                 )}
                 ListEmptyComponent={
-                    <Text className="text-center text-slate-400 text-base">No history available</Text>
+                    <View className="items-center py-20">
+                        <Text className="text-slate-300 font-black text-lg">No season history</Text>
+                    </View>
                 }
             />
         </View>

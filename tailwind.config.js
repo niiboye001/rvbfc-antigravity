@@ -11,7 +11,7 @@ module.exports = {
       },
       colors: {
         primary: '#0f172a', // Navy Blue
-        secondary: '#f8fafc', // Slate 50
+        secondary: '#ECECEC', // Brand Gray
         accent: '#3b82f6', // Blue 500
       }
     },

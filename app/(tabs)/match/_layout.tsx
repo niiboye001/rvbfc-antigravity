@@ -18,27 +18,38 @@ export default function MatchLayout() {
     );
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#1e293b' }}>
-            <SafeAreaView edges={['top']} style={{ backgroundColor: '#1e293b' }}>
+        <View style={{ flex: 1, backgroundColor: '#ECECEC' }}>
+            <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff' }}>
                 {/* Header Main Content - Centered */}
-                <View className="items-center justify-center py-6">
-                    <Text className="text-white text-3xl font-black tracking-widest text-center" style={{ fontFamily: 'Inter_700Bold' }}>R v B FC</Text>
+                <View className="items-center justify-center py-8">
+                    <Text className="text-slate-900 text-3xl font-black tracking-[4px] text-center">MATCH CENTER</Text>
                 </View>
             </SafeAreaView>
 
             <MaterialTopTabs
                 screenOptions={{
-                    tabBarStyle: { backgroundColor: '#1e293b', elevation: 0, shadowOpacity: 0, borderBottomWidth: 0 },
-                    tabBarLabelStyle: { fontFamily: 'Inter_700Bold', fontSize: 15, textTransform: 'capitalize', fontWeight: 'bold' },
-                    tabBarActiveTintColor: '#ffffff',
-                    tabBarInactiveTintColor: '#94a3b8', // Slate-400 for inactive
-                    tabBarIndicatorStyle: { backgroundColor: '#ffffff', height: 3 },
-                    tabBarItemStyle: { width: 'auto', paddingHorizontal: 16 }
+                    tabBarStyle: {
+                        backgroundColor: '#ffffff',
+                        elevation: 0,
+                        shadowOpacity: 0,
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#f1f5f9'
+                    },
+                    tabBarLabelStyle: {
+                        fontSize: 12,
+                        textTransform: 'uppercase',
+                        fontWeight: '900',
+                        letterSpacing: 1
+                    },
+                    tabBarActiveTintColor: '#3b82f6',
+                    tabBarInactiveTintColor: '#94a3b8',
+                    tabBarIndicatorStyle: { backgroundColor: '#3b82f6', height: 4, borderRadius: 2 },
+                    tabBarItemStyle: { width: 'auto', paddingHorizontal: 20 }
                 }}
             >
-                <MaterialTopTabs.Screen name="index" options={{ title: 'Current Result' }} />
-                <MaterialTopTabs.Screen name="table" options={{ title: 'League Table' }} />
-                <MaterialTopTabs.Screen name="seasons" options={{ title: 'Seasons' }} />
+                <MaterialTopTabs.Screen name="index" options={{ title: 'Results' }} />
+                <MaterialTopTabs.Screen name="table" options={{ title: 'Standings' }} />
+                <MaterialTopTabs.Screen name="seasons" options={{ title: 'History' }} />
             </MaterialTopTabs>
         </View>
     );

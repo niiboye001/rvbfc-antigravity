@@ -31,59 +31,82 @@ export default function SettingsScreen() {
 
     const MenuItem = ({ title, icon: Icon, route, color = '#3b82f6' }: any) => (
         <TouchableOpacity
-            className="flex-row items-center bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100"
+            className="flex-row items-center bg-white p-5 rounded-2xl mb-4 border border-slate-50"
             onPress={() => router.push(route)}
         >
-            <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-4">
-                <Icon size={20} color={color} />
+            <View className="w-12 h-12 rounded-2xl items-center justify-center mr-4" style={{ backgroundColor: `${color}15` }}>
+                <Icon size={22} color={color} />
             </View>
-            <Text className="flex-1 font-bold text-slate-700 text-base">{title}</Text>
-            <ChevronRight size={20} color="#cbd5e1" />
+            <Text className="flex-1 font-black text-slate-700 text-base">{title}</Text>
+            <View className="bg-slate-50 p-2 rounded-xl">
+                <ChevronRight size={18} color="#94a3b8" />
+            </View>
         </TouchableOpacity>
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-secondary p-4">
+        <SafeAreaView edges={['top']} className="flex-1 bg-white">
             {session ? (
-                <>
-                    <View className="flex-row items-center justify-between mb-6">
-                        <View className="flex-row items-center">
-                            <ShieldCheck size={28} color="#0f172a" />
-                            <Text className="text-2xl font-bold text-primary ml-2">Admin Panel</Text>
+                <View className="flex-1 bg-secondary">
+                    <View className="bg-white px-6 py-10 border-b border-slate-50/50 flex-row items-center justify-between">
+                        <View>
+                            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">Organizer</Text>
+                            <Text className="text-3xl font-black text-slate-900 uppercase tracking-[4px]">Admin Panel</Text>
                         </View>
-                        <TouchableOpacity onPress={handleLogout} className="p-2">
-                            <LogOut size={22} color="#94a3b8" />
+                        <TouchableOpacity
+                            onPress={handleLogout}
+                            className="bg-red-50 p-3 rounded-2xl border border-red-100"
+                        >
+                            <LogOut size={22} color="#ef4444" />
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView showsVerticalScrollIndicator={false}>
-                        <Text className="text-xs font-bold text-slate-400 uppercase mb-3 ml-2">Management</Text>
-                        <MenuItem title="Manage Teams" icon={Users} route="/admin/teams" color="#3b82f6" />
-                        <MenuItem title="Manage Players" icon={UserPlus} route="/admin/players" color="#10b981" />
+                    <ScrollView
+                        className="flex-1 px-6 pt-8"
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 40 }}
+                    >
+                        <View className="mb-8">
+                            <Text className="text-slate-900 text-lg font-black mb-4 ml-1">Management</Text>
+                            <MenuItem title="Manage Teams" icon={Users} route="/admin/teams" color="#6366f1" />
+                            <MenuItem title="Manage Players" icon={UserPlus} route="/admin/players" color="#10b981" />
+                        </View>
 
-                        <Text className="text-xs font-bold text-slate-400 uppercase mb-3 ml-2 mt-4">Competition</Text>
-                        <MenuItem title="Enter Match Result" icon={ClipboardList} route="/admin/matches" color="#f59e0b" />
+                        <View className="mb-8">
+                            <Text className="text-slate-900 text-lg font-black mb-4 ml-1">Competition</Text>
+                            <MenuItem title="Enter Match Result" icon={ClipboardList} route="/admin/matches" color="#f59e0b" />
+                        </View>
 
-                        <View className="mt-10 p-4 bg-slate-100 rounded-xl">
-                            <Text className="text-slate-500 text-center text-xs">Logged in as {session.user.email}</Text>
+                        <View className="mt-4 p-6 bg-white rounded-3xl border border-slate-100 items-center">
+                            <View className="w-12 h-12 rounded-full bg-slate-50 items-center justify-center mb-3">
+                                <ShieldCheck size={24} color="#94a3b8" />
+                            </View>
+                            <Text className="text-slate-400 text-center font-bold text-xs">Logged in as</Text>
+                            <Text className="text-slate-900 text-center font-black text-sm">{session.user.email}</Text>
                         </View>
                     </ScrollView>
-                </>
+                </View>
             ) : (
-                <View className="flex-1 items-center justify-center px-6">
-                    <View className="w-20 h-20 rounded-3xl bg-slate-100 items-center justify-center mb-6">
-                        <ShieldCheck size={40} color="#cbd5e1" />
+                <View className="flex-1 bg-secondary">
+                    <View className="bg-white px-6 py-10 border-b border-slate-50/50 items-center justify-center">
+                        <Text className="text-3xl font-black text-slate-900 uppercase tracking-[4px]">Settings</Text>
                     </View>
-                    <Text className="text-2xl font-bold text-slate-800 mb-2">Restricted Area</Text>
-                    <Text className="text-slate-500 text-center mb-8">
-                        The admin panel is reserved for league organizers. Please sign in to access management tools.
-                    </Text>
-                    <TouchableOpacity
-                        className="bg-primary w-full py-4 rounded-xl items-center"
-                        onPress={() => router.push('/admin/login')}
-                    >
-                        <Text className="text-white font-bold text-lg">Sign In</Text>
-                    </TouchableOpacity>
+
+                    <View className="flex-1 items-center justify-center px-8">
+                        <View className="w-24 h-24 rounded-3xl bg-white shadow-md shadow-slate-100 items-center justify-center mb-8 border border-slate-50">
+                            <ShieldCheck size={48} color="#cbd5e1" />
+                        </View>
+                        <Text className="text-3xl font-black text-slate-900 mb-3 text-center">Restricted Access</Text>
+                        <Text className="text-slate-400 font-bold text-center mb-10 leading-6 px-4">
+                            The admin panel is exclusively for league organizers. Sign in to manage teams and matches.
+                        </Text>
+                        <TouchableOpacity
+                            className="bg-primary w-full py-5 rounded-2xl items-center shadow-md shadow-blue-100"
+                            onPress={() => router.push('/admin/login')}
+                        >
+                            <Text className="text-white font-black text-lg">Sign In as Admin</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             )}
         </SafeAreaView>

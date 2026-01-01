@@ -1,6 +1,8 @@
 import { Stack, router } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminLayout() {
@@ -14,7 +16,7 @@ export default function AdminLayout() {
 
     if (loading) {
         return (
-            <View className="flex-1 bg-slate-950 items-center justify-center">
+            <View className="flex-1 bg-secondary items-center justify-center">
                 <ActivityIndicator color="#3b82f6" size="large" />
             </View>
         );
@@ -22,9 +24,28 @@ export default function AdminLayout() {
 
     return (
         <Stack screenOptions={{
-            headerStyle: { backgroundColor: '#0f172a' },
-            headerTintColor: '#fff',
-            headerTitleStyle: { fontFamily: 'Inter_700Bold' },
+            header: ({ options, route, navigation }) => {
+                const title = options.title || route.name;
+                const canGoBack = navigation.canGoBack();
+
+                return (
+                    <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff' }}>
+                        <View className="flex-row items-center justify-center py-10 px-6">
+                            {canGoBack && (
+                                <TouchableOpacity
+                                    onPress={() => navigation.goBack()}
+                                    className="absolute left-6 z-10 p-2"
+                                >
+                                    <ChevronLeft size={28} color="#0f172a" strokeWidth={3} />
+                                </TouchableOpacity>
+                            )}
+                            <Text className="text-slate-900 text-3xl font-black uppercase tracking-[4px] text-center">
+                                {title}
+                            </Text>
+                        </View>
+                    </SafeAreaView>
+                );
+            }
         }}>
             <Stack.Screen name="login" options={{ headerShown: false }} />
             <Stack.Screen name="teams" options={{ title: 'Manage Teams' }} />

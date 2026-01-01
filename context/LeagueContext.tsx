@@ -10,6 +10,7 @@ interface LeagueContextType {
     matches: Match[];
     seasons: Season[];
     currentSeason: Season | null;
+    isLoading: boolean;
     addTeam: (team: Team) => Promise<Team | undefined>;
     updateTeam: (team: Team) => void;
     deleteTeam: (id: string) => void;
@@ -30,6 +31,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     const [players, setPlayers] = useState<Player[]>([]);
     const [matches, setMatches] = useState<Match[]>([]);
     const [seasons, setSeasons] = useState<Season[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         loadData();
@@ -146,6 +148,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
                     setPlayers(finalPlayers);
                     setSeasons(finalSeasons);
                     setMatches(finalMatches);
+                    setIsLoading(false);
                     return; // Loaded from cloud successfully
                 }
             } catch (error) {
@@ -199,8 +202,12 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
         const currentSeasonId = finalSeasons.find((s: Season) => s.isCurrent)?.id || finalSeasons[0]?.id;
 
-        if (loadedMatches.length === 0 && currentSeasonId) {
-            finalMatches = generateMockMatches(currentSeasonId);
+        if (loadedMatches.length === 0 && finalSeasons.length > 0) {
+            let allMockMatches: Match[] = [];
+            finalSeasons.forEach(season => {
+                allMockMatches = [...allMockMatches, ...generateMockMatches(season.id)];
+            });
+            finalMatches = allMockMatches;
             storage.saveData(storage.KEYS.MATCHES, finalMatches);
         } else {
             finalMatches = loadedMatches;
@@ -210,6 +217,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         setPlayers(finalPlayers);
         setSeasons(finalSeasons);
         setMatches(finalMatches);
+        setIsLoading(false);
     };
 
     const addTeam = async (team: Team) => {
@@ -395,7 +403,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <LeagueContext.Provider value={{
-            teams, players, matches, seasons, currentSeason,
+            teams, players, matches, seasons, currentSeason, isLoading,
             addTeam, updateTeam, deleteTeam, deleteTeams,
             addPlayer, updatePlayer, deletePlayer, deletePlayers,
             addMatch, deleteMatch,
