@@ -1,4 +1,5 @@
-import { SectionList, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { SectionList, Text, TouchableOpacity, View } from 'react-native';
 import { useLeague } from '../../../context/LeagueContext';
 import { Season } from '../../../types';
 
@@ -30,17 +31,19 @@ export default function SeasonsScreen() {
                     </View>
                 )}
                 renderItem={({ item }) => (
-                    <View className="bg-white p-6 rounded-2xl mb-4 border border-slate-50 relative overflow-hidden shadow-sm shadow-slate-200">
-                        <View className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-[60px]" />
-                        <View className="flex-row justify-between items-center">
-                            <View>
-                                <Text className="text-2xl font-black text-slate-900">
-                                    {item.name.replace(new RegExp(`${item.year}\\s*|\\s*${item.year}`, 'g'), '').trim() || 'Season'}
-                                </Text>
+                    <TouchableOpacity onPress={() => router.push(`/season/${item.id}`)}>
+                        <View className="bg-white p-6 rounded-2xl mb-4 border border-slate-50 relative overflow-hidden shadow-sm shadow-slate-200">
+                            <View className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-[60px]" />
+                            <View className="flex-row justify-between items-center">
+                                <View>
+                                    <Text className="text-xl font-black text-slate-900">
+                                        {item.name.replace(new RegExp(`${item.year}\\s*|\\s*${item.year}`, 'g'), '').trim() || 'Season'}
+                                    </Text>
+                                </View>
+                                {/* Optional: Indicator or just Keep it clean since Year is header */}
                             </View>
-                            {/* Optional: Indicator or just Keep it clean since Year is header */}
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )}
                 ListEmptyComponent={
                     <View className="items-center py-20">

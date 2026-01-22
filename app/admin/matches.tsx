@@ -277,6 +277,45 @@ export default function ManageMatches() {
                                         </TouchableOpacity>
                                     </View>
 
+                                    {/* Team Picker Overlay - Rendered INSIDE the Main Modal to avoid nesting issues */}
+                                    {!!teamPickerVisible && (
+                                        <View className="absolute inset-0 bg-white z-50 rounded-t-[32px] p-6">
+                                            <Text className="text-xl font-bold mb-6 text-center text-primary">
+                                                Select {teamPickerVisible === 'home' ? 'Home' : 'Away'} Team
+                                            </Text>
+                                            <FlatList
+                                                data={teams.filter(t => {
+                                                    if (teamPickerVisible === 'home') return t.id !== awayTeamId;
+                                                    if (teamPickerVisible === 'away') return t.id !== homeTeamId;
+                                                    return true;
+                                                })}
+                                                keyExtractor={t => t.id}
+                                                showsVerticalScrollIndicator={false}
+                                                renderItem={({ item }) => (
+                                                    <TouchableOpacity
+                                                        className="p-4 border-b border-slate-100 flex-row items-center"
+                                                        onPress={() => {
+                                                            if (teamPickerVisible === 'home') setHomeTeamId(item.id);
+                                                            if (teamPickerVisible === 'away') setAwayTeamId(item.id);
+                                                            setTeamPickerVisible(null);
+                                                        }}
+                                                    >
+                                                        <View className="w-10 h-10 rounded-full bg-slate-100 items-center justify-center mr-3">
+                                                            <Text className="font-bold text-slate-500">{item.initials}</Text>
+                                                        </View>
+                                                        <Text className="text-lg font-bold text-slate-900">{item.name}</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                                ListEmptyComponent={
+                                                    <Text className="text-center text-slate-400 mt-10">No available teams</Text>
+                                                }
+                                            />
+                                            <TouchableOpacity className="mt-4 p-4 bg-slate-100 rounded-xl items-center" onPress={() => setTeamPickerVisible(null)}>
+                                                <Text className="text-slate-600 font-bold">Cancel</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+
                                     <ScrollView showsVerticalScrollIndicator={false}>
                                         {/* Teams & Scores */}
                                         <View className="bg-slate-50 p-4 rounded-2xl mb-6 border border-slate-100">
@@ -375,37 +414,7 @@ export default function ManageMatches() {
                 onCancel={() => setConfirmVisible(false)}
             />
 
-            {/* Team Picker Modal */}
-            <Modal animationType="fade" transparent visible={!!teamPickerVisible} statusBarTranslucent>
-                <View className="flex-1 bg-black/50 justify-center p-6">
-                    <View className="bg-white rounded-[32px] max-h-[60%] p-6">
-                        <Text className="text-xl font-bold mb-6 text-center text-primary">Select Team</Text>
-                        <FlatList
-                            data={teams.filter(t => {
-                                if (teamPickerVisible === 'home') return t.id !== awayTeamId;
-                                if (teamPickerVisible === 'away') return t.id !== homeTeamId;
-                                return true;
-                            })}
-                            keyExtractor={t => t.id}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    className="p-4 border-b border-slate-100"
-                                    onPress={() => {
-                                        if (teamPickerVisible === 'home') setHomeTeamId(item.id);
-                                        if (teamPickerVisible === 'away') setAwayTeamId(item.id);
-                                        setTeamPickerVisible(null);
-                                    }}
-                                >
-                                    <Text className="text-center font-bold text-slate-700">{item.name}</Text>
-                                </TouchableOpacity>
-                            )}
-                        />
-                        <TouchableOpacity className="mt-4 p-3 items-center" onPress={() => setTeamPickerVisible(null)}>
-                            <Text className="text-red-500 font-bold">Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+
 
             {/* Event Details Adding Modal */}
             <Modal animationType="slide" transparent visible={eventModalVisible} statusBarTranslucent>
