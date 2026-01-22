@@ -27,22 +27,28 @@ export default function StatsCard({ title, value, icon: Icon, color = '#3b82f6',
         <TouchableOpacity
             activeOpacity={onPress ? 0.7 : 1}
             onPress={handlePress}
-            className="bg-white p-5 rounded-2xl flex-1 border border-slate-50"
+            className="bg-card p-5 rounded-2xl flex-1 border border-slate-100 shadow-sm"
         >
-            <View className="w-10 h-10 rounded-2xl items-center justify-center mb-3" style={{ backgroundColor: `${color}15` }}>
-                <Icon size={20} color={color} />
+            <View className="flex-row justify-between items-start mb-2">
+                <View className="w-10 h-10 rounded-xl items-center justify-center bg-blue-50">
+                    <Icon size={20} color={color} />
+                </View>
+                {/* Optional Top Right Indicator if needed, else empty */}
             </View>
-            <Text className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</Text>
-            <View className="flex-row">
-                {isNumber ? (
-                    <CountingText
-                        value={numericValue}
-                        shouldAnimate={shouldAnimate}
-                        className="text-3xl font-black text-slate-900"
-                    />
-                ) : (
-                    <Text className="text-3xl font-black text-slate-900">{value}</Text>
-                )}
+
+            <View className="mt-2">
+                <Text className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mb-1">{title}</Text>
+                <View className="flex-row">
+                    {isNumber ? (
+                        <CountingText
+                            value={numericValue}
+                            shouldAnimate={shouldAnimate}
+                            className="text-2xl font-black text-slate-900"
+                        />
+                    ) : (
+                        <Text className="text-2xl font-black text-slate-900">{value}</Text>
+                    )}
+                </View>
             </View>
         </TouchableOpacity>
     );

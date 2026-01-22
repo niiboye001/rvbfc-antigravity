@@ -68,7 +68,7 @@ export default function LeagueTableScreen() {
     const getTeam = (id: string) => teams.find(t => t.id === id);
 
     const renderHeader = () => (
-        <View className="flex-row py-4 border-b border-slate-100 px-4 bg-white rounded-t-2xl">
+        <View className="flex-row py-3 border-b border-slate-100 px-4 bg-white rounded-t-2xl">
             <Text className="w-8 font-bold text-slate-500 text-[13px] text-center">#</Text>
             <Text className="flex-1 font-bold text-slate-700 text-sm pl-2">Team</Text>
             <Text className="w-8 font-bold text-slate-500 text-[13px] text-center">MP</Text>
@@ -95,21 +95,13 @@ export default function LeagueTableScreen() {
                         const goalDiff = item.goalsFor - item.goalsAgainst;
                         const gdDisplay = goalDiff > 0 ? `+${goalDiff}` : goalDiff;
                         return (
-                            <View className="flex-row py-4 items-center px-4 bg-white border-b border-slate-50/50">
+                            <View className="flex-row py-2.5 items-center px-4 bg-white border-b border-slate-50/50">
                                 <View className="w-8 items-center">
                                     <Text className="text-slate-900 font-black text-base">{rank}</Text>
                                 </View>
 
                                 <View className="flex-1 flex-row items-center pl-2">
-                                    <View
-                                        className="w-8 h-8 rounded-xl mr-3 items-center justify-center border border-slate-100"
-                                        style={{ backgroundColor: team?.color ? `${team.color}15` : '#f8fafc' }}
-                                    >
-                                        <Text className="text-[10px] font-black" style={{ color: team?.color || '#64748b' }}>{team?.initials}</Text>
-                                    </View>
-                                    <View>
-                                        <Text className="font-black text-slate-800 text-sm" numberOfLines={1}>{team?.name}</Text>
-                                    </View>
+                                    <Text className="font-black text-slate-800 text-sm" numberOfLines={1}>{team?.name}</Text>
                                 </View>
 
                                 <View className="flex-row items-center">
