@@ -17,7 +17,8 @@ interface LeagueContextType {
     addPlayer: (player: Player) => Promise<Player | undefined>;
     updatePlayer: (player: Player) => void;
     deletePlayer: (id: string) => void;
-    addMatch: (match: Match) => void;
+    addMatch: (match: Match) => Promise<Match | undefined>;
+    updateMatch: (match: Match) => Promise<void>;
     deleteMatch: (id: string) => void;
     deleteTeams: (ids: string[]) => Promise<void>;
     deletePlayers: (ids: string[]) => Promise<void>;
@@ -392,6 +393,59 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         return newMatch;
     };
 
+    const updateMatch = async (match: Match) => {
+        // 1. Update Match Meta
+        const { error: matchError } = await supabase.from('matches').update({
+            home_team_id: match.homeTeamId,
+            away_team_id: match.awayTeamId,
+            home_score: match.homeScore,
+            away_score: match.awayScore,
+            is_finished: match.isFinished,
+            date: match.date
+        }).eq('id', match.id);
+
+        if (matchError) {
+            console.error('Error updating match:', matchError);
+            return;
+        }
+
+        // 2. Replace Events (Delete all, then Insert new)
+        // Delete all existing events for this match
+        await supabase.from('match_events').delete().eq('match_id', match.id);
+
+        // Insert new events
+        let insertedEvents: MatchEvent[] = [];
+        if (match.events && match.events.length > 0) {
+            const eventsToInsert = match.events.map(ev => ({
+                match_id: match.id,
+                team_id: ev.teamId,
+                player_id: ev.playerId,
+                assistant_id: ev.assistantId,
+                type: ev.type,
+                minute: ev.minute
+            }));
+            const { data: eventsData, error: eventsError } = await supabase.from('match_events').insert(eventsToInsert).select();
+
+            if (eventsError) console.error('Error updating events:', eventsError);
+            else {
+                insertedEvents = eventsData.map((ev: any) => ({
+                    id: ev.id,
+                    type: ev.type,
+                    playerId: ev.player_id,
+                    teamId: ev.team_id,
+                    assistantId: ev.assistant_id,
+                    minute: ev.minute
+                }));
+            }
+        }
+
+        // Update local state with the newly inserted events IDs (though the UI might not care until reload)
+        const updatedMatch: Match = { ...match, events: insertedEvents };
+        const updated = matches.map(m => m.id === match.id ? updatedMatch : m);
+        setMatches(updated);
+        storage.saveData(storage.KEYS.MATCHES, updated);
+    };
+
     const deleteMatch = async (id: string) => {
         const updated = matches.filter(m => m.id !== id);
         setMatches(updated);
@@ -406,7 +460,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
             teams, players, matches, seasons, currentSeason, isLoading,
             addTeam, updateTeam, deleteTeam, deleteTeams,
             addPlayer, updatePlayer, deletePlayer, deletePlayers,
-            addMatch, deleteMatch,
+            addMatch, updateMatch, deleteMatch,
             refreshData: loadData
         }}>
             {children}

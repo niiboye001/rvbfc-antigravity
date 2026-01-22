@@ -1,7 +1,8 @@
 import * as Haptics from 'expo-haptics';
-import { TrendingUp, Trophy, User, Users } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { Calendar, ChevronRight, TrendingUp, Trophy, User, Users } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CountingText } from '../../components/CountingText';
@@ -9,6 +10,7 @@ import StatsCard from '../../components/StatsCard';
 import { useLeague } from '../../context/LeagueContext';
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const { teams, players, matches, seasons, currentSeason, refreshData, isLoading } = useLeague();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -169,30 +171,23 @@ export default function DashboardScreen() {
   }, [teams, sortedSeasons, sortedTeams, matches]);
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-secondary">
+    <SafeAreaView edges={['top']} className="flex-1 bg-white">
+      {/* Fixed Header */}
+      <View className="items-center justify-center py-6 border-b border-slate-50">
+        <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">
+          {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </Text>
+        <Text className="text-slate-900 text-3xl font-black tracking-[4px] text-center">LEAGUE HUB</Text>
+      </View>
 
       <ScrollView
-        className="flex-1"
+        className="flex-1 bg-secondary"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3b82f6" />
         }
       >
-        {/* Header section */}
-        <View className="px-6 pt-6 pb-6 bg-white border-b border-slate-100">
-          <View className="flex-row justify-between items-center mb-1">
-            <View>
-              <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">
-                {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-              </Text>
-              <Text className="text-2xl font-black text-slate-900 tracking-tight">{currentSeason?.name || 'League Hub'}</Text>
-            </View>
-            <View className="bg-blue-50 p-2.5 rounded-full border border-blue-100">
-              <Trophy size={20} color="#2563eb" />
-            </View>
-          </View>
-        </View>
 
         {/* Overview Row */}
         <View className="flex-row px-6 mb-4 gap-4">
@@ -201,7 +196,7 @@ export default function DashboardScreen() {
             value={totalTeams}
             icon={Users}
             color="#2563eb"
-            onPress={() => { }}
+            onPress={() => router.push('/(tabs)/match/table')}
             shouldAnimate={!isLoading}
           />
           <StatsCard
@@ -209,14 +204,18 @@ export default function DashboardScreen() {
             value={totalPlayers}
             icon={User}
             color="#2563eb"
-            onPress={() => { }}
+            onPress={() => router.push('/(tabs)/match')}
             shouldAnimate={!isLoading}
           />
         </View>
 
         {/* Hero Section: Latest Match */}
         <View className="px-6 mb-8 mt-6">
-          <View className="overflow-hidden relative rounded-3xl shadow-lg shadow-blue-500/20">
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push('/(tabs)/match')}
+            className="overflow-hidden relative rounded-3xl shadow-lg shadow-blue-500/20"
+          >
             {/* Gradient Background */}
             <View className="absolute inset-0 bg-blue-600" />
             {/* Decorative Circles */}
@@ -276,26 +275,31 @@ export default function DashboardScreen() {
                   </View>
                 </View>
               ) : (
-                <View className="py-10 items-center">
-                  <Text className="text-blue-100 font-bold italic">No match records found</Text>
+                <View className="py-8 items-center justify-center">
+                  <View className="w-16 h-16 bg-white/10 rounded-full items-center justify-center mb-4 backdrop-blur-sm border border-white/20">
+                    <Calendar size={32} color="white" />
+                  </View>
+                  <Text className="text-white font-bold text-lg mb-1">No Matches Found</Text>
+                  <Text className="text-blue-100 text-xs">There are no match records for this season yet.</Text>
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Performance Grid */}
         <View className="px-6 mb-8">
           <View className="flex-row justify-between items-end mb-4 px-1">
             <Text className="text-slate-900 text-lg font-black tracking-tight">Top Performers</Text>
-            <View className="bg-blue-50 px-3 py-1 rounded-full">
-              <Text className="text-blue-600 text-[10px] font-bold uppercase tracking-widest">Season {currentSeason?.year}</Text>
-            </View>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/match')} className="flex-row items-center">
+              <Text className="text-blue-500 text-xs font-bold mr-1">See All</Text>
+              <ChevronRight size={14} color="#3b82f6" />
+            </TouchableOpacity>
           </View>
 
           <View className="flex-row gap-4">
             {/* Top Scorer */}
-            <View className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+            <View className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200 relative overflow-hidden">
               <View className="flex-row justify-between items-start mb-4">
                 <View className="w-10 h-10 rounded-xl items-center justify-center bg-amber-50">
                   <Trophy size={18} color="#d97706" />
@@ -318,7 +322,7 @@ export default function DashboardScreen() {
             </View>
 
             {/* Top Assister */}
-            <View className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+            <View className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200 relative overflow-hidden">
               <View className="flex-row justify-between items-start mb-4">
                 <View className="w-10 h-10 rounded-xl items-center justify-center bg-indigo-50">
                   <Users size={18} color="#4f46e5" />
@@ -344,7 +348,7 @@ export default function DashboardScreen() {
 
         {/* Standings Chart */}
         <View className="px-6">
-          <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+          <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm shadow-slate-200">
             <View className="flex-row items-center justify-between mb-8">
               <View className="flex-row items-center">
                 <View className="bg-slate-50 p-2 rounded-xl mr-3">
@@ -417,6 +421,15 @@ export default function DashboardScreen() {
                 </ScrollView>
               </View>
             </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/match/table')}
+              className="mt-6 pt-4 border-t border-slate-100 flex-row justify-center items-center"
+            >
+              <Text className="text-blue-500 font-bold text-sm mr-1">View Full Standings</Text>
+              <ChevronRight size={16} color="#3b82f6" />
+            </TouchableOpacity>
+
           </View>
         </View>
       </ScrollView>

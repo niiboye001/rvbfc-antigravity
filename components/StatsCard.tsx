@@ -27,7 +27,7 @@ export default function StatsCard({ title, value, icon: Icon, color = '#3b82f6',
         <TouchableOpacity
             activeOpacity={onPress ? 0.7 : 1}
             onPress={handlePress}
-            className="bg-card p-5 rounded-2xl flex-1 border border-slate-100 shadow-sm"
+            className="bg-card p-5 rounded-2xl flex-1 border border-slate-100 shadow-sm shadow-slate-200"
         >
             <View className="flex-row justify-between items-start mb-2">
                 <View className="w-10 h-10 rounded-xl items-center justify-center bg-blue-50">

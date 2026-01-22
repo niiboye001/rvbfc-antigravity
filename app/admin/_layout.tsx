@@ -30,18 +30,31 @@ export default function AdminLayout() {
 
                 return (
                     <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff' }}>
-                        <View className="flex-row items-center justify-center py-10 px-6">
-                            {canGoBack && (
-                                <TouchableOpacity
-                                    onPress={() => navigation.goBack()}
-                                    className="absolute left-6 z-10 p-2"
-                                >
-                                    <ChevronLeft size={28} color="#0f172a" strokeWidth={3} />
-                                </TouchableOpacity>
-                            )}
-                            <Text className="text-slate-900 text-3xl font-black uppercase tracking-[4px] text-center">
+                        <View className="flex-row items-center justify-between py-8 px-4">
+                            {/* Left: Back Button or Spacer */}
+                            <View className="w-12 items-start z-10">
+                                {canGoBack && (
+                                    <TouchableOpacity
+                                        onPress={() => navigation.goBack()}
+                                        className="p-2 -ml-2"
+                                    >
+                                        <ChevronLeft size={28} color="#0f172a" strokeWidth={3} />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
+                            {/* Center: Title */}
+                            <Text
+                                className="text-slate-900 text-2xl font-black uppercase tracking-[4px] text-center flex-1 mx-2"
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.7}
+                            >
                                 {title}
                             </Text>
+
+                            {/* Right: Spacer for balance */}
+                            <View className="w-12" />
                         </View>
                     </SafeAreaView>
                 );

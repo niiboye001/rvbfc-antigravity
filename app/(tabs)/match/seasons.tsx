@@ -1,26 +1,44 @@
-import { FlatList, Text, View } from 'react-native';
+import { SectionList, Text, View } from 'react-native';
 import { useLeague } from '../../../context/LeagueContext';
+import { Season } from '../../../types';
 
 export default function SeasonsScreen() {
     const { seasons } = useLeague();
 
+    // Group seasons by year
+    const sections = seasons.reduce((acc: { title: string; data: Season[] }[], season) => {
+        const yearTitle = `Year ${season.year}`;
+        const existingSection = acc.find(s => s.title === yearTitle);
+        if (existingSection) {
+            existingSection.data.push(season);
+        } else {
+            acc.push({ title: yearTitle, data: [season] });
+        }
+        return acc;
+    }, []).sort((a, b) => parseInt(b.title.split(' ')[1]) - parseInt(a.title.split(' ')[1])); // Newest year first
+
     return (
         <View className="flex-1 bg-secondary">
-            <FlatList
-                data={seasons}
+            <SectionList
+                sections={sections}
                 keyExtractor={item => item.id}
                 contentContainerStyle={{ padding: 24 }}
+                stickySectionHeadersEnabled={false}
+                renderSectionHeader={({ section: { title } }) => (
+                    <View className="mb-4 mt-2">
+                        <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest">{title}</Text>
+                    </View>
+                )}
                 renderItem={({ item }) => (
-                    <View className="bg-white p-6 rounded-2xl mb-4 border border-slate-50 relative overflow-hidden">
+                    <View className="bg-white p-6 rounded-2xl mb-4 border border-slate-50 relative overflow-hidden shadow-sm shadow-slate-200">
                         <View className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-[60px]" />
                         <View className="flex-row justify-between items-center">
                             <View>
-                                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-1">League Season</Text>
-                                <Text className="text-2xl font-black text-slate-900">{item.name}</Text>
+                                <Text className="text-2xl font-black text-slate-900">
+                                    {item.name.replace(new RegExp(`${item.year}\\s*|\\s*${item.year}`, 'g'), '').trim() || 'Season'}
+                                </Text>
                             </View>
-                            <View className="bg-slate-50 px-4 py-2 rounded-2xl">
-                                <Text className="text-blue-500 font-black text-sm">{item.year}</Text>
-                            </View>
+                            {/* Optional: Indicator or just Keep it clean since Year is header */}
                         </View>
                     </View>
                 )}
