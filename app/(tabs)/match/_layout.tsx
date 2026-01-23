@@ -44,11 +44,13 @@ export default function MatchLayout() {
                     tabBarActiveTintColor: '#3b82f6',
                     tabBarInactiveTintColor: '#94a3b8',
                     tabBarIndicatorStyle: { backgroundColor: '#3b82f6', height: 4, borderRadius: 2 },
-                    tabBarItemStyle: { width: 'auto', paddingHorizontal: 20 }
+                    tabBarItemStyle: { width: 'auto', paddingHorizontal: 20 },
+                    tabBarScrollEnabled: true
                 }}
             >
                 <MaterialTopTabs.Screen name="index" options={{ title: 'Results' }} />
                 <MaterialTopTabs.Screen name="table" options={{ title: 'Standings' }} />
+                <MaterialTopTabs.Screen name="stats" options={{ title: 'Contributors' }} />
                 <MaterialTopTabs.Screen name="seasons" options={{ title: 'History' }} />
             </MaterialTopTabs>
         </View>
