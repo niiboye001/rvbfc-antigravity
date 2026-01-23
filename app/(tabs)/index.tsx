@@ -296,7 +296,7 @@ export default function DashboardScreen() {
         <View className="px-6 mb-8">
           <View className="flex-row justify-between items-end mb-4 px-1">
             <Text className="text-slate-900 text-lg font-black tracking-tight">Top Performers</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/match')} className="flex-row items-center">
+            <TouchableOpacity onPress={() => router.push('/(tabs)/match/stats')} className="flex-row items-center">
               <Text className="text-blue-500 text-xs font-bold mr-1">See All</Text>
               <ChevronRight size={14} color="#3b82f6" />
             </TouchableOpacity>
@@ -427,13 +427,7 @@ export default function DashboardScreen() {
               </View>
             </View>
 
-            <TouchableOpacity
-              onPress={() => router.push('/(tabs)/match/table')}
-              className="mt-6 pt-4 border-t border-slate-100 flex-row justify-center items-center"
-            >
-              <Text className="text-blue-500 font-bold text-sm mr-1">View Full Standings</Text>
-              <ChevronRight size={16} color="#3b82f6" />
-            </TouchableOpacity>
+
 
           </View>
         </View>
