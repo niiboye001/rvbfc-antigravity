@@ -63,6 +63,7 @@ export default function AdminLayout() {
             <Stack.Screen name="login" options={{ headerShown: false }} />
             <Stack.Screen name="teams" options={{ title: 'Manage Teams' }} />
             <Stack.Screen name="players" options={{ title: 'Manage Players' }} />
+            <Stack.Screen name="seasons" options={{ title: 'Manage Seasons' }} />
             <Stack.Screen name="matches" options={{ title: 'Enter Match Result' }} />
         </Stack>
     );

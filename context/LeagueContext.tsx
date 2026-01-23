@@ -20,6 +20,9 @@ interface LeagueContextType {
     addMatch: (match: Match) => Promise<Match | undefined>;
     updateMatch: (match: Match) => Promise<void>;
     deleteMatch: (id: string) => void;
+    addSeason: (season: Season) => Promise<void>;
+    updateSeason: (season: Season) => Promise<void>;
+    deleteSeason: (id: string) => Promise<void>;
     deleteTeams: (ids: string[]) => Promise<void>;
     deletePlayers: (ids: string[]) => Promise<void>;
     refreshData: () => void;
@@ -558,6 +561,92 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         await supabase.from('matches').delete().eq('id', id);
     };
 
+    const addSeason = async (season: Season) => {
+        // 1. If new season is Current, update others in DB to false
+        if (season.isCurrent) {
+            await supabase.from('seasons').update({ is_current: false }).neq('id', '00000000-0000-0000-0000-000000000000'); // update all
+            // Update local state immediately to reflect this
+            setSeasons(prev => prev.map(s => ({ ...s, isCurrent: false })));
+        }
+
+        // 2. Insert new Season
+        const { data, error } = await supabase.from('seasons').insert({
+            name: season.name,
+            year: season.year,
+            sequence: season.sequence,
+            is_current: season.isCurrent
+        }).select().single();
+
+        if (error) {
+            console.error('Error adding season:', error);
+            return;
+        }
+
+        const newSeason: Season = {
+            id: data.id,
+            name: data.name,
+            year: data.year,
+            sequence: data.sequence,
+            isCurrent: data.is_current
+        };
+
+        // 3. Update State & Storage
+        setSeasons(prev => {
+            const updated = prev.map(s => newSeason.isCurrent ? { ...s, isCurrent: false } : s);
+            const final = [...updated, newSeason].sort((a, b) => (b.year - a.year) || (b.sequence - a.sequence));
+            storage.saveData(storage.KEYS.SEASONS, final);
+            return final;
+        });
+    };
+
+    const updateSeason = async (season: Season) => {
+        // 1. If setting as Current, update others
+        if (season.isCurrent) {
+            await supabase.from('seasons').update({ is_current: false }).neq('id', season.id);
+            setSeasons(prev => prev.map(s => ({ ...s, isCurrent: s.id === season.id }))); // Temp optimization
+        }
+
+        // 2. Update DB
+        const { error } = await supabase.from('seasons').update({
+            name: season.name,
+            year: season.year,
+            sequence: season.sequence,
+            is_current: season.isCurrent
+        }).eq('id', season.id);
+
+        if (error) {
+            console.error('Error updating season:', error);
+            return;
+        }
+
+        // 3. Update Local State
+        setSeasons(prev => {
+            const updated = prev.map(s => {
+                if (s.id === season.id) return season;
+                if (season.isCurrent) return { ...s, isCurrent: false };
+                return s;
+            });
+            const final = updated.sort((a, b) => (b.year - a.year) || (b.sequence - a.sequence));
+            storage.saveData(storage.KEYS.SEASONS, final);
+            return final;
+        });
+    };
+
+    const deleteSeason = async (id: string) => {
+        const { error } = await supabase.from('seasons').delete().eq('id', id);
+
+        if (error) {
+            console.error('Error deleting season:', error);
+            return; // In real app, we'd signal this upwards
+        }
+
+        setSeasons(prev => {
+            const updated = prev.filter(s => s.id !== id);
+            storage.saveData(storage.KEYS.SEASONS, updated);
+            return updated;
+        });
+    };
+
     const currentSeason = seasons.find(s => s.isCurrent) || seasons[0] || null;
 
     return (
@@ -566,6 +655,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
             addTeam, updateTeam, deleteTeam, deleteTeams,
             addPlayer, updatePlayer, deletePlayer, deletePlayers,
             addMatch, updateMatch, deleteMatch,
+            addSeason, updateSeason, deleteSeason, // Exported
             refreshData: loadData
         }}>
             {children}

@@ -1,8 +1,8 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Calendar, ChevronRight, TrendingUp, Trophy, User, Users } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CountingText } from '../../components/CountingText';
@@ -20,6 +20,25 @@ export default function DashboardScreen() {
     await refreshData();
     setRefreshing(false);
   };
+
+  // Check for missing season for current year
+  useEffect(() => {
+    if (isLoading) return;
+
+    const currentYear = new Date().getFullYear();
+    const hasSeasonForYear = seasons.some(s => s.year === currentYear);
+
+    if (!hasSeasonForYear) {
+      Alert.alert(
+        "Action Required",
+        `No season found for ${currentYear}. Please create one in Admin.`,
+        [
+          { text: "Later", style: "cancel" },
+          { text: "Go to Admin", onPress: () => router.push('/admin/seasons') }
+        ]
+      );
+    }
+  }, [seasons, isLoading]);
 
   // Stats
   const totalTeams = teams.length;
