@@ -14,18 +14,21 @@ export default function SeasonDetailScreen() {
 
     const seasonMatches = useMemo(() => matches.filter(m => m.seasonId === id), [matches, id]);
 
-    // Calculate Season Stats
+    // Get all teams registered for this season
+    const allSeasonTeams = useMemo(() =>
+        teams.filter(t => t.seasonId === id),
+        [teams, id]
+    );
+
+    // Calculate Season Stats (Match dependent)
     const stats = useMemo(() => {
         let totalGoals = 0;
         let totalYellows = 0;
         let totalReds = 0;
         const playerStats: Record<string, { goals: number, assists: number }> = {};
-        const teamIds = new Set<string>();
 
         seasonMatches.forEach(m => {
             totalGoals += m.homeScore + m.awayScore;
-            teamIds.add(m.homeTeamId);
-            teamIds.add(m.awayTeamId);
 
             m.events?.forEach(e => {
                 if (e.type === 'YELLOW_CARD') totalYellows++;
@@ -57,22 +60,25 @@ export default function SeasonDetailScreen() {
             totalReds,
             topScorer: sortedScorers[0],
             topAssister: sortedAssisters[0],
-            participatingTeams: teams.filter(t => teamIds.has(t.id))
         };
-    }, [seasonMatches, players, teams]);
+    }, [seasonMatches, players]);
 
     // Calculate Table
     const tableData = useMemo(() => {
         const table: Record<string, { p: number, w: number, d: number, l: number, gf: number, ga: number, pts: number }> = {};
 
-        stats.participatingTeams.forEach(t => {
+        // Initialize table for ALL teams in the season
+        allSeasonTeams.forEach(t => {
             table[t.id] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
         });
 
         seasonMatches.filter(m => m.isFinished).forEach(m => {
+            // Ensure teams exist in table before updating (handle inconsistencies)
+            if (!table[m.homeTeamId]) table[m.homeTeamId] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+            if (!table[m.awayTeamId]) table[m.awayTeamId] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+
             const home = table[m.homeTeamId];
             const away = table[m.awayTeamId];
-            if (!home || !away) return;
 
             home.p++; away.p++;
             home.gf += m.homeScore; home.ga += m.awayScore;
@@ -91,11 +97,9 @@ export default function SeasonDetailScreen() {
         });
 
         return Object.entries(table)
-            .map(([tid, data]) => ({ team: teams.find(t => t.id === tid), ...data }))
+            .map(([tid, data]) => ({ team: allSeasonTeams.find(t => t.id === tid) || teams.find(t => t.id === tid), ...data }))
             .sort((a, b) => b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga));
-    }, [seasonMatches, stats.participatingTeams, teams]);
-
-    if (!season) return <View className="flex-1 bg-white justify-center items-center"><Text>Season not found</Text></View>;
+    }, [seasonMatches, allSeasonTeams, teams]);
 
     if (!season) return <View className="flex-1 bg-white justify-center items-center"><Text>Season not found</Text></View>;
 
@@ -293,7 +297,7 @@ export default function SeasonDetailScreen() {
 
                     {activeTab === 'TEAMS' && (
                         <View className="gap-3">
-                            {stats.participatingTeams.map(team => {
+                            {allSeasonTeams.map(team => {
                                 const teamPlayers = players.filter(p => p.teamId === team.id);
                                 return (
                                     <View key={team.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm shadow-slate-200">
