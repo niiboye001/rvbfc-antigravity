@@ -49,6 +49,7 @@ export default function MatchLayout() {
                 }}
             >
                 <MaterialTopTabs.Screen name="index" options={{ title: 'Results' }} />
+                <MaterialTopTabs.Screen name="matches" options={{ title: 'Matches' }} />
                 <MaterialTopTabs.Screen name="table" options={{ title: 'Standings' }} />
                 <MaterialTopTabs.Screen name="stats" options={{ title: 'Contributors' }} />
                 <MaterialTopTabs.Screen name="seasons" options={{ title: 'History' }} />
