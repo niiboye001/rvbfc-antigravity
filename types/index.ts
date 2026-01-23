@@ -16,7 +16,7 @@ export interface Player {
     redCards: number;
 }
 
-export type MatchEventType = 'GOAL' | 'ASSIST' | 'YELLOW_CARD' | 'RED_CARD' | 'FOUL';
+export type MatchEventType = 'GOAL' | 'ASSIST' | 'YELLOW_CARD' | 'RED_CARD' | 'FOUL' | 'PENALTY_GOAL';
 
 export interface MatchEvent {
     id: string;

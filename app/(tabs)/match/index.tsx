@@ -30,14 +30,16 @@ export default function CurrentMatchScreen() {
         >
             {/* Drammatic Score Header */}
             <View className="px-5 pt-8 mb-8">
-                <View className="bg-slate-900 rounded-3xl p-8 shadow-lg shadow-slate-200 relative overflow-hidden">
-                    {/* Background Accents */}
-                    <View className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full -mr-24 -mt-24" />
-                    <View className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/5 rounded-full -ml-12 -mb-12" />
+                <View className="bg-blue-600 rounded-3xl p-8 shadow-lg shadow-blue-200 relative overflow-hidden">
+                    {/* Gradient Background */}
+                    <View className="absolute inset-0 bg-blue-600" />
+                    {/* Decorative Circles */}
+                    <View className="absolute top-[-50] right-[-50] w-64 h-64 bg-blue-500 rounded-full opacity-50" />
+                    <View className="absolute bottom-[-20] left-[-20] w-32 h-32 bg-indigo-600 rounded-full opacity-50" />
 
                     <View className="items-center mb-8">
-                        <View className="bg-white/10 px-4 py-1.5 rounded-full">
-                            <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px]">
+                        <View className="bg-blue-800/50 px-4 py-1.5 rounded-full border border-blue-400/30">
+                            <Text className="text-white text-[10px] font-black uppercase tracking-[3px]">
                                 {new Date(currentMatch.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </Text>
                         </View>
@@ -45,13 +47,7 @@ export default function CurrentMatchScreen() {
 
                     <View className="flex-row justify-between items-center mb-8">
                         <View className="items-center flex-1">
-                            <View
-                                className="w-20 h-20 rounded-2xl items-center justify-center mb-4 border border-white/10"
-                                style={{ backgroundColor: homeTeam?.color ? `${homeTeam.color}30` : '#f8fafc20' }}
-                            >
-                                <Text className="font-black text-3xl text-white">{homeTeam?.initials}</Text>
-                            </View>
-                            <Text className="font-black text-white text-xs text-center" numberOfLines={1}>{homeTeam?.name}</Text>
+                            <Text className="font-black text-white text-xl text-center leading-6" numberOfLines={2}>{homeTeam?.name}</Text>
                         </View>
 
                         <View className="items-center px-4">
@@ -72,13 +68,7 @@ export default function CurrentMatchScreen() {
                         </View>
 
                         <View className="items-center flex-1">
-                            <View
-                                className="w-20 h-20 rounded-[32px] items-center justify-center mb-4 border border-white/10 shadow-lg"
-                                style={{ backgroundColor: awayTeam?.color ? `${awayTeam.color}30` : '#f8fafc20' }}
-                            >
-                                <Text className="font-black text-3xl text-white">{awayTeam?.initials}</Text>
-                            </View>
-                            <Text className="font-black text-white text-xs text-center" numberOfLines={1}>{awayTeam?.name}</Text>
+                            <Text className="font-black text-white text-xl text-center leading-6" numberOfLines={2}>{awayTeam?.name}</Text>
                         </View>
                     </View>
                 </View>

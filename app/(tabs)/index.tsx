@@ -246,40 +246,38 @@ export default function DashboardScreen() {
                   <View className="flex-row justify-between items-center">
                     {/* Home Team */}
                     <View className="items-center flex-1">
-                      <View className="w-16 h-16 rounded-full items-center justify-center mb-3 bg-white border-4 border-blue-200 shadow-sm">
-                        <Text className="text-xl font-black text-slate-900">{getTeamInitials(currentMatch.homeTeamId)}</Text>
-                      </View>
-                      <Text className="text-white font-bold text-xs uppercase tracking-wider opacity-90 text-center" numberOfLines={1}>
+                      <Text className="text-xl font-black text-white text-center leading-6" numberOfLines={2}>
                         {getTeamName(currentMatch.homeTeamId)}
                       </Text>
                     </View>
 
                     {/* Score */}
-                    <View className="flex-row items-center justify-center mx-2 h-16 bg-blue-900/40 px-6 rounded-2xl border border-blue-400/30">
-                      <Text className="text-4xl font-black text-white tracking-tighter shadow-sm">{currentMatch.homeScore}</Text>
-                      <Text className="text-2xl font-light text-blue-200 mx-2">-</Text>
-                      <Text className="text-4xl font-black text-white tracking-tighter shadow-sm">{currentMatch.awayScore}</Text>
+                    <View className="items-center px-4">
+                      <View className="flex-row items-center mb-1">
+                        <Text className="text-6xl font-black text-white tracking-tighter">
+                          {currentMatch.homeScore}
+                        </Text>
+                        <View className="w-5 h-[3px] bg-white/20 mx-4" />
+                        <Text className="text-6xl font-black text-white tracking-tighter">
+                          {currentMatch.awayScore}
+                        </Text>
+                      </View>
+                      <View className="bg-green-500/20 px-3 py-1 rounded-full border border-green-500/20">
+                        <Text className="text-[10px] font-black text-green-400 uppercase tracking-widest">
+                          {currentMatch.isFinished ? 'Full Time' : 'Live'}
+                        </Text>
+                      </View>
                     </View>
 
                     {/* Away Team */}
                     <View className="items-center flex-1">
-                      <View className="w-16 h-16 rounded-full items-center justify-center mb-3 bg-white border-4 border-blue-200 shadow-sm">
-                        <Text className="text-xl font-black text-slate-900">{getTeamInitials(currentMatch.awayTeamId)}</Text>
-                      </View>
-                      <Text className="text-white font-bold text-xs uppercase tracking-wider opacity-90 text-center" numberOfLines={1}>
+                      <Text className="text-xl font-black text-white text-center leading-6" numberOfLines={2}>
                         {getTeamName(currentMatch.awayTeamId)}
                       </Text>
                     </View>
                   </View>
 
-                  {/* Status Indicator */}
-                  <View className="mt-6 flex-row justify-center">
-                    <View className="bg-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm">
-                      <Text className="text-white text-[10px] font-bold uppercase tracking-widest">
-                        {currentMatch.isFinished ? 'Full Time' : 'Live'}
-                      </Text>
-                    </View>
-                  </View>
+
                 </View>
               ) : (
                 <View className="py-8 items-center justify-center">

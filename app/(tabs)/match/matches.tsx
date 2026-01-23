@@ -1,9 +1,11 @@
+import { useRouter } from 'expo-router';
 import { Calendar, Info } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useLeague } from '../../../context/LeagueContext';
 
 export default function MatchesListScreen() {
+    const router = useRouter();
     const { matches, teams, currentSeason } = useLeague();
 
     // Get all matches for the current season, sorted by date (newest first)
@@ -19,7 +21,11 @@ export default function MatchesListScreen() {
 
     const renderItem = ({ item }: { item: any }) => {
         return (
-            <View className="bg-white p-4 rounded-xl shadow-sm shadow-slate-200 mb-3 border border-slate-100 mx-4">
+            <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => router.push(`/match/${item.id}`)}
+                className="bg-white p-4 rounded-xl shadow-sm shadow-slate-200 mb-3 border border-slate-100 mx-4"
+            >
                 <View className="flex-row items-center justify-between">
                     <View className="flex-1 flex-row items-center justify-between">
                         {/* Home */}
@@ -59,7 +65,7 @@ export default function MatchesListScreen() {
                         </View>
                     )}
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 

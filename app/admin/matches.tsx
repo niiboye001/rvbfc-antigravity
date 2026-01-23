@@ -402,8 +402,8 @@ export default function ManageMatches() {
                                                 events.map((ev, index) => (
                                                     <View key={index} className="flex-row justify-between py-3 border-b border-slate-100 last:border-0 items-center">
                                                         <View className="flex-row items-center flex-1">
-                                                            <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${ev.type === 'GOAL' ? 'bg-green-100' : ev.type === 'RED_CARD' ? 'bg-red-100' : 'bg-yellow-100'}`}>
-                                                                <View className={`w-3 h-3 rounded-full ${ev.type === 'GOAL' ? 'bg-green-500' : ev.type === 'RED_CARD' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                                                            <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${ev.type === 'GOAL' || ev.type === 'PENALTY_GOAL' ? 'bg-green-100' : ev.type === 'RED_CARD' ? 'bg-red-100' : 'bg-yellow-100'}`}>
+                                                                <View className={`w-3 h-3 rounded-full ${ev.type === 'GOAL' || ev.type === 'PENALTY_GOAL' ? 'bg-green-500' : ev.type === 'RED_CARD' ? 'bg-red-500' : 'bg-yellow-500'}`} />
                                                             </View>
                                                             <View>
                                                                 <Text className="font-bold text-slate-800 text-sm">{ev.type.replace('_', ' ')}</Text>
@@ -465,7 +465,7 @@ export default function ManageMatches() {
 
                             <ScrollView showsVerticalScrollIndicator={false}>
                                 <View className="flex-row mb-6 flex-wrap gap-2">
-                                    {['GOAL', 'ASSIST', 'YELLOW_CARD', 'RED_CARD'].map((type) => (
+                                    {['GOAL', 'PENALTY_GOAL', 'ASSIST', 'YELLOW_CARD', 'RED_CARD'].map((type) => (
                                         <TouchableOpacity
                                             key={type}
                                             className={`p-2 px-4 rounded-full border ${eventType === type ? 'bg-primary border-primary' : 'bg-white border-slate-200'}`}
@@ -511,7 +511,7 @@ export default function ManageMatches() {
                                     <ChevronDown size={20} color="#64748b" />
                                 </TouchableOpacity>
 
-                                {eventType === 'GOAL' && (
+                                {['GOAL', 'PENALTY_GOAL'].includes(eventType) && (
                                     <>
                                         <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Assistant (Optional)</Text>
                                         <TouchableOpacity
