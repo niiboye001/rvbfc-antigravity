@@ -1,5 +1,6 @@
 export interface Team {
     id: string;
+    seasonId?: string; // Optional for backward compatibility, but recommended
     name: string;
     initials: string; // Logo
     color: string;

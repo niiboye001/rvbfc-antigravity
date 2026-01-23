@@ -1,8 +1,7 @@
-import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Calendar, ChevronRight, TrendingUp, Trophy, User, Users } from 'lucide-react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +15,6 @@ export default function DashboardScreen() {
   const { teams, players, matches, seasons, currentSeason, refreshData, isLoading } = useLeague();
   const [refreshing, setRefreshing] = useState(false);
   const [seasonAlertVisible, setSeasonAlertVisible] = useState(false);
-  const isFocused = useIsFocused();
 
   const onRefresh = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -26,20 +24,30 @@ export default function DashboardScreen() {
   };
 
   // Check for missing season for current year
-  useEffect(() => {
-    if (isLoading || !isFocused) return;
+  useFocusEffect(
+    useCallback(() => {
+      if (isLoading) return;
 
-    const currentYear = new Date().getFullYear();
-    const hasSeasonForYear = seasons.some(s => s.year === currentYear);
+      const currentYear = new Date().getFullYear();
+      const hasSeasonForYear = seasons.some(s => s.year === currentYear);
 
-    if (!hasSeasonForYear) {
-      setSeasonAlertVisible(true);
-    }
-  }, [seasons, isLoading, isFocused]);
+      if (!hasSeasonForYear) {
+        setSeasonAlertVisible(true);
+      }
+    }, [seasons, isLoading])
+  );
 
-  // Stats
-  const totalTeams = teams.length;
-  const totalPlayers = players.length;
+  // Stats (Filtered by Current Season)
+  const currentSeasonTeams = useMemo(() =>
+    teams.filter(t => t.seasonId === currentSeason?.id),
+    [teams, currentSeason]
+  );
+
+  const totalTeams = currentSeasonTeams.length;
+  const totalPlayers = useMemo(() =>
+    players.filter(p => currentSeasonTeams.some(t => t.id === p.teamId)).length,
+    [players, currentSeasonTeams]
+  );
 
   // Calculate Top Performers for current season dynamically
   const { topScorerData, topAssisterData } = useMemo(() => {
@@ -104,13 +112,17 @@ export default function DashboardScreen() {
     );
   }
 
-  // Current Match (Latest finished or ongoing)
-  const currentMatch = [...matches]
-    .sort((a, b) => {
-      const timeA = a?.date ? new Date(a.date).getTime() : 0;
-      const timeB = b?.date ? new Date(b.date).getTime() : 0;
-      return timeB - timeA;
-    })[0];
+  // Current Match (Latest finished or ongoing in Current Season)
+  const currentMatch = useMemo(() => {
+    if (!currentSeason) return null;
+    return matches
+      .filter(m => m.seasonId === currentSeason.id)
+      .sort((a, b) => {
+        const timeA = a?.date ? new Date(a.date).getTime() : 0;
+        const timeB = b?.date ? new Date(b.date).getTime() : 0;
+        return timeB - timeA;
+      })[0];
+  }, [matches, currentSeason]);
 
   const getTeamName = (id: string) => teams.find(t => t.id === id)?.name || 'Unknown';
   const getTeamColor = (id: string) => teams.find(t => t.id === id)?.color || '#94a3b8';
@@ -118,9 +130,13 @@ export default function DashboardScreen() {
 
   // Calculate Historical Points for all seasons
   // Sort seasons and teams for consistent display
-  const sortedSeasons = useMemo(() =>
-    [...seasons].sort((a, b) => (a.sequence || 0) - (b.sequence || 0)),
-    [seasons]);
+  // Filter sortedSeasons to include ALL seasons in the CURRENT YEAR
+  const sortedSeasons = useMemo(() => {
+    if (!currentSeason) return [];
+    return seasons
+      .filter(s => s.year === currentSeason.year)
+      .sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+  }, [seasons, currentSeason]);
 
   const sortedTeams = useMemo(() =>
     [...teams].sort((a, b) => a.name.localeCompare(b.name)),
@@ -159,11 +175,16 @@ export default function DashboardScreen() {
     const palette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#6366f1'];
 
     sortedSeasons.forEach((season) => {
-      sortedTeams.forEach((team, tIdx) => {
+      // Get teams specific to this season
+      const seasonTeams = teams
+        .filter(t => t.seasonId === season.id)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      seasonTeams.forEach((team, tIdx) => {
         const points = pointsMap[season.id]?.[team.id] || 0;
 
         const isFirstInGroup = tIdx === 0;
-        const isLastInGroup = tIdx === sortedTeams.length - 1;
+        const isLastInGroup = tIdx === seasonTeams.length - 1;
 
         // Use palette to ensure every team has a different color
         const barColor = palette[tIdx % palette.length];
@@ -184,11 +205,11 @@ export default function DashboardScreen() {
             </View>
           ),
           labelComponent: isFirstInGroup ? () => (
-            <View className="items-center" style={{ marginTop: 8, width: sortedTeams.length * 28 + 16 }}>
+            <View className="items-center" style={{ marginTop: 8, width: seasonTeams.length * 28 + 16 }}>
               <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest">S{season.sequence}</Text>
             </View>
           ) : undefined,
-          // Ensure even small points are visible
+          // Ensure even small points are visible, but 0 is flat
           minHeight: points > 0 ? 6 : 0,
         });
       });
@@ -407,7 +428,7 @@ export default function DashboardScreen() {
                   <View className="w-[100vw]">
                     <BarChart
                       data={chartData}
-                      width={sortedSeasons.length * (sortedTeams.length * 28 + 16)}
+                      width={Math.max(300, chartData.length * 35)}
                       noOfSections={4}
                       height={180}
                       barWidth={20}

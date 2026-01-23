@@ -1,16 +1,22 @@
 import * as Haptics from 'expo-haptics';
 import { CheckCircle2, ChevronDown, Circle, Edit2, Plus, Trash2, X } from 'lucide-react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useLeague } from '../../context/LeagueContext';
 import { Player } from '../../types';
 
 export default function ManagePlayers() {
-    const { players, teams, addPlayer, updatePlayer, deletePlayer, deletePlayers } = useLeague();
+    const { players, teams, addPlayer, updatePlayer, deletePlayer, deletePlayers, currentSeason } = useLeague();
     const [modalVisible, setModalVisible] = useState(false);
     const [teamPickerVisible, setTeamPickerVisible] = useState(false);
     const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
+    // Filter teams for the current season
+    const currentSeasonTeams = useMemo(() =>
+        teams.filter(t => t.seasonId === currentSeason?.id),
+        [teams, currentSeason]
+    );
 
     // Confirmation State
     const [confirmVisible, setConfirmVisible] = useState(false);
@@ -31,7 +37,8 @@ export default function ManagePlayers() {
         } else {
             setEditingPlayer(null);
             setName('');
-            setSelectedTeamId(teams[0]?.id || '');
+            // Default to first team of current season
+            setSelectedTeamId(currentSeasonTeams[0]?.id || '');
         }
         setModalVisible(true);
     };
@@ -254,7 +261,7 @@ export default function ManagePlayers() {
                                             </View>
                                             <Text className="text-xl font-bold mb-6 text-center text-primary">Select Team</Text>
                                             <FlatList
-                                                data={teams}
+                                                data={currentSeasonTeams}
                                                 keyExtractor={t => t.id}
                                                 showsVerticalScrollIndicator={false}
                                                 renderItem={({ item }) => (

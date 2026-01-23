@@ -1,13 +1,18 @@
 import { ClipboardList, Info } from 'lucide-react-native';
+import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useLeague } from '../../../context/LeagueContext';
 
 export default function CurrentMatchScreen() {
-    const { matches, teams, players } = useLeague();
+    const { matches, teams, players, currentSeason } = useLeague();
 
-    // Logic to find current match (latest or live)
-    const currentMatch = [...matches]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    // Logic to find current match (latest or live) for the CURRENT SEASON
+    const currentMatch = useMemo(() => {
+        if (!currentSeason) return null;
+        return matches
+            .filter(m => m.seasonId === currentSeason.id)
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    }, [matches, currentSeason]);
 
     const getTeam = (id: string) => teams.find(t => t.id === id);
 

@@ -105,6 +105,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
                 // Map Data (even if empty, to ensure we don't fall back to Mock)
                 finalTeams = teamsData?.map(t => ({
                     id: t.id,
+                    seasonId: t.season_id,
                     name: t.name,
                     initials: t.initials,
                     color: t.color,
@@ -228,6 +229,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     const addTeam = async (team: Team) => {
         // Prepare data for Supabase (omit ID)
         const { data, error } = await supabase.from('teams').insert({
+            season_id: team.seasonId,
             name: team.name,
             initials: team.initials,
             color: team.color
@@ -240,6 +242,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
         const newTeam: Team = {
             id: data.id,
+            seasonId: data.season_id,
             name: data.name,
             initials: data.initials,
             color: data.color
@@ -256,6 +259,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         setTeams(updated);
         storage.saveData(storage.KEYS.TEAMS, updated);
         await supabase.from('teams').update({
+            season_id: team.seasonId,
             name: team.name,
             initials: team.initials,
             color: team.color,
@@ -633,19 +637,37 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const deleteSeason = async (id: string) => {
+        const seasonToDelete = seasons.find(s => s.id === id);
         const { error } = await supabase.from('seasons').delete().eq('id', id);
 
         if (error) {
             console.error('Error deleting season:', error);
-            return; // In real app, we'd signal this upwards
+            return;
         }
 
-        setSeasons(prev => {
-            const updated = prev.filter(s => s.id !== id);
-            storage.saveData(storage.KEYS.SEASONS, updated);
-            return updated;
-        });
+        let updatedSeasons = seasons.filter(s => s.id !== id);
+
+        // If we deleted the current season, we must assign a new one
+        if (seasonToDelete?.isCurrent && updatedSeasons.length > 0) {
+            // Sort to find the most recent season (highest year, then highest sequence)
+            updatedSeasons.sort((a, b) => (b.year - a.year) || (b.sequence - a.sequence));
+
+            const newCurrent = updatedSeasons[0];
+
+            // 1. Update DB
+            await supabase.from('seasons').update({ is_current: true }).eq('id', newCurrent.id);
+
+            // 2. Update Local State
+            updatedSeasons = updatedSeasons.map((s, index) =>
+                index === 0 ? { ...s, isCurrent: true } : s
+            );
+        }
+
+        setSeasons(updatedSeasons);
+        storage.saveData(storage.KEYS.SEASONS, updatedSeasons);
     };
+
+
 
     const currentSeason = seasons.find(s => s.isCurrent) || seasons[0] || null;
 

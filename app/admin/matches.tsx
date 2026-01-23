@@ -394,7 +394,7 @@ export default function ManageMatches() {
                                                 Select {teamPickerVisible === 'home' ? 'Home' : 'Away'} Team
                                             </Text>
                                             <FlatList
-                                                data={teams.filter(t => {
+                                                data={teams.filter(t => t.seasonId === currentSeason?.id).filter(t => {
                                                     if (teamPickerVisible === 'home') return t.id !== awayTeamId;
                                                     if (teamPickerVisible === 'away') return t.id !== homeTeamId;
                                                     return true;

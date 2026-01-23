@@ -14,8 +14,8 @@ export default function LeagueTableScreen() {
 
         const stats: Record<string, LeagueTableEntry> = {};
 
-        // Initialize stats for all teams
-        teams.forEach(team => {
+        // Initialize stats for all teams in current season
+        teams.filter(t => t.seasonId === currentSeason.id).forEach(team => {
             stats[team.id] = {
                 teamId: team.id,
                 played: 0,
@@ -130,7 +130,7 @@ export default function LeagueTableScreen() {
                 {/* Squads List */}
                 <View className="mx-5 mb-8 mt-10">
                     <Text className="text-slate-900 text-lg font-black mb-4 uppercase tracking-tight px-1">Teams & Squads</Text>
-                    {teams.map(team => {
+                    {teams.filter(t => t.seasonId === currentSeason?.id).map(team => {
                         const teamPlayers = players.filter(p => p.teamId === team.id);
                         return (
                             <View key={team.id} className="bg-white rounded-2xl p-5 mb-4 border border-slate-100 shadow-sm shadow-slate-200">
