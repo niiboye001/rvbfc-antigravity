@@ -11,6 +11,7 @@ interface ConfirmationModalProps {
     confirmText?: string;
     cancelText?: string;
     type?: 'danger' | 'info';
+    showCancelButton?: boolean;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -21,7 +22,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onCancel,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
-    type = 'danger'
+    type = 'danger',
+    showCancelButton = true
 }) => {
     return (
         <Modal
@@ -62,15 +64,17 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                     </Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    activeOpacity={0.7}
-                                    onPress={onCancel}
-                                    className="w-full py-4 rounded-xl items-center bg-slate-100"
-                                >
-                                    <Text className="text-slate-600 font-bold text-lg">
-                                        {cancelText}
-                                    </Text>
-                                </TouchableOpacity>
+                                {showCancelButton && (
+                                    <TouchableOpacity
+                                        activeOpacity={0.7}
+                                        onPress={onCancel}
+                                        className="w-full py-4 rounded-xl items-center bg-slate-100"
+                                    >
+                                        <Text className="text-slate-600 font-bold text-lg">
+                                            {cancelText}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
                         </View>
                     </TouchableWithoutFeedback>

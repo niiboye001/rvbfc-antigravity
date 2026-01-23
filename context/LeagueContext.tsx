@@ -260,17 +260,64 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const deleteTeam = async (id: string) => {
-        const updated = teams.filter(t => t.id !== id);
-        setTeams(updated);
-        storage.saveData(storage.KEYS.TEAMS, updated);
-        await supabase.from('teams').delete().eq('id', id);
+        // 1. Local Cascade: Remove related data to prevent UI crashes
+        const updatedTeams = teams.filter(t => t.id !== id);
+        const updatedPlayers = players.filter(p => p.teamId !== id);
+        const updatedMatches = matches.filter(m => m.homeTeamId !== id && m.awayTeamId !== id);
+
+        setTeams(updatedTeams);
+        setPlayers(updatedPlayers);
+        setMatches(updatedMatches);
+
+        storage.saveData(storage.KEYS.TEAMS, updatedTeams);
+        storage.saveData(storage.KEYS.PLAYERS, updatedPlayers);
+        storage.saveData(storage.KEYS.MATCHES, updatedMatches);
+
+        // 2. DB Cascade: Delete dependents first to avoid Foreign Key violations
+        try {
+            await supabase.from('matches').delete().or(`home_team_id.eq.${id},away_team_id.eq.${id}`);
+            await supabase.from('players').delete().eq('team_id', id);
+            await supabase.from('teams').delete().eq('id', id);
+        } catch (error) {
+            console.error('Error cascading delete for team:', error);
+            // Revert local state? For now, we assume success or user will retry.
+        }
     };
 
     const deleteTeams = async (ids: string[]) => {
-        const updated = teams.filter(t => !ids.includes(t.id));
-        setTeams(updated);
-        storage.saveData(storage.KEYS.TEAMS, updated);
-        await supabase.from('teams').delete().in('id', ids);
+        // 1. Local Cascade
+        const updatedTeams = teams.filter(t => !ids.includes(t.id));
+        const updatedPlayers = players.filter(p => !ids.includes(p.teamId));
+        const updatedMatches = matches.filter(m => !ids.includes(m.homeTeamId) && !ids.includes(m.awayTeamId));
+
+        setTeams(updatedTeams);
+        setPlayers(updatedPlayers);
+        setMatches(updatedMatches);
+
+        storage.saveData(storage.KEYS.TEAMS, updatedTeams);
+        storage.saveData(storage.KEYS.PLAYERS, updatedPlayers);
+        storage.saveData(storage.KEYS.MATCHES, updatedMatches);
+
+        // 2. DB Cascade
+        try {
+            // Need to build a query for matches. Safest is to just iterate or use 'in' for both columns if possible.
+            // Supabase doesn't easily support "home IN ids OR away IN ids" in one delete.
+            // We will fetch affected match IDs first or just let the Foreign Key CASCADE handle it if set? 
+            // We cannot assume Cascade is set. We must delete manually.
+            // Delete matches involving ANY of the teams.
+            // Since `or` with `in` is complex, we'll loop or use a simpler approach.
+            // Actually, for multiple teams, let's keep it simple: strict cascade at DB might be better, but let's try to delete Matches where home_in_ids OR away_in_ids.
+            const { data: matchesToDelete } = await supabase.from('matches').select('id').or(`home_team_id.in.(${ids.join(',')}),away_team_id.in.(${ids.join(',')})`);
+            if (matchesToDelete && matchesToDelete.length > 0) {
+                const matchIds = matchesToDelete.map(m => m.id);
+                await supabase.from('matches').delete().in('id', matchIds);
+            }
+
+            await supabase.from('players').delete().in('team_id', ids);
+            await supabase.from('teams').delete().in('id', ids);
+        } catch (error) {
+            console.error('Error cascading bulk delete teams:', error);
+        }
     };
 
     const addPlayer = async (player: Player) => {
@@ -319,20 +366,67 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const deletePlayer = async (id: string) => {
-        const updated = players.filter(p => p.id !== id);
-        setPlayers(updated);
-        storage.saveData(storage.KEYS.PLAYERS, updated);
-        await supabase.from('players').delete().eq('id', id);
+        // 1. Local Cascade: Remove related match events
+        const updatedMatches = matches.map(m => ({
+            ...m,
+            events: m.events?.filter(e => e.playerId !== id && e.assistantId !== id) || []
+        }));
+
+        // 2. Local Cascade: Remove player
+        const updatedPlayers = players.filter(p => p.id !== id);
+
+        setMatches(updatedMatches);
+        setPlayers(updatedPlayers);
+
+        storage.saveData(storage.KEYS.MATCHES, updatedMatches);
+        storage.saveData(storage.KEYS.PLAYERS, updatedPlayers);
+
+        // 3. DB Cascade
+        try {
+            await supabase.from('match_events').delete().or(`player_id.eq.${id},assistant_id.eq.${id}`);
+            await supabase.from('players').delete().eq('id', id);
+        } catch (error) {
+            console.error('Error cascading delete for player:', error);
+        }
     };
 
     const deletePlayers = async (ids: string[]) => {
-        const updated = players.filter(p => !ids.includes(p.id));
-        setPlayers(updated);
-        storage.saveData(storage.KEYS.PLAYERS, updated);
-        await supabase.from('players').delete().in('id', ids);
+        // 1. Local Cascade: Remove related match events
+        const updatedMatches = matches.map(m => ({
+            ...m,
+            events: m.events?.filter(e => !ids.includes(e.playerId) && (!e.assistantId || !ids.includes(e.assistantId))) || []
+        }));
+
+        // 2. Local Cascade: Remove players
+        const updatedPlayers = players.filter(p => !ids.includes(p.id));
+
+        setMatches(updatedMatches);
+        setPlayers(updatedPlayers);
+
+        storage.saveData(storage.KEYS.MATCHES, updatedMatches);
+        storage.saveData(storage.KEYS.PLAYERS, updatedPlayers);
+
+        // 3. DB Cascade
+        try {
+            // Delete events involving ANY of these players
+            await supabase.from('match_events').delete().or(`player_id.in.(${ids.join(',')}),assistant_id.in.(${ids.join(',')})`);
+            await supabase.from('players').delete().in('id', ids);
+        } catch (error) {
+            console.error('Error cascading bulk delete players:', error);
+        }
     };
 
     const addMatch = async (match: Match) => {
+        // Validation: Prevent self-matches and negative scores
+        if (match.homeTeamId === match.awayTeamId) {
+            console.error('Validation Error: Home and Away teams cannot be the same.');
+            return;
+        }
+        if (match.homeScore < 0 || match.awayScore < 0) {
+            console.error('Validation Error: Scores cannot be negative.');
+            return;
+        }
+
         // 1. Insert Match
         const { data: matchData, error: matchError } = await supabase.from('matches').insert({
             season_id: match.seasonId,
@@ -394,6 +488,16 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const updateMatch = async (match: Match) => {
+        // Validation: Prevent self-matches and negative scores
+        if (match.homeTeamId === match.awayTeamId) {
+            console.error('Validation Error: Home and Away teams cannot be the same.');
+            return;
+        }
+        if (match.homeScore < 0 || match.awayScore < 0) {
+            console.error('Validation Error: Scores cannot be negative.');
+            return;
+        }
+
         // 1. Update Match Meta
         const { error: matchError } = await supabase.from('matches').update({
             home_team_id: match.homeTeamId,

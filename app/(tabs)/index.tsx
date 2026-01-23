@@ -110,33 +110,40 @@ export default function DashboardScreen() {
     [...teams].sort((a, b) => a.name.localeCompare(b.name)),
     [teams]);
 
-  // Calculate Historical Points for all seasons
+  // Calculate Historical Points for all seasons (Optimized O(M + S*T))
   const chartData = useMemo(() => {
     if (teams.length === 0 || sortedSeasons.length === 0) {
       return [{ value: 0, label: '-', frontColor: '#ccc' }];
     }
 
+    // 1. Pre-calculate points per team per season
+    const pointsMap: Record<string, Record<string, number>> = {}; // { seasonId: { teamId: points } }
+
+    matches.forEach(m => {
+      if (!m.isFinished) return;
+
+      if (!pointsMap[m.seasonId]) pointsMap[m.seasonId] = {};
+      const seasonPoints = pointsMap[m.seasonId];
+
+      if (!seasonPoints[m.homeTeamId]) seasonPoints[m.homeTeamId] = 0;
+      if (!seasonPoints[m.awayTeamId]) seasonPoints[m.awayTeamId] = 0;
+
+      if (m.homeScore > m.awayScore) {
+        seasonPoints[m.homeTeamId] += 3;
+      } else if (m.awayScore > m.homeScore) {
+        seasonPoints[m.awayTeamId] += 3;
+      } else {
+        seasonPoints[m.homeTeamId] += 1;
+        seasonPoints[m.awayTeamId] += 1;
+      }
+    });
+
+    // 2. Build Chart Data
     const groupedData: any[] = [];
 
     sortedSeasons.forEach((season) => {
       sortedTeams.forEach((team, tIdx) => {
-        const seasonMatches = matches.filter(m =>
-          m.seasonId === season.id &&
-          m.isFinished &&
-          (m.homeTeamId === team.id || m.awayTeamId === team.id)
-        );
-
-        let points = 0;
-        seasonMatches.forEach(m => {
-          const isHome = m.homeTeamId === team.id;
-          if (isHome) {
-            if (m.homeScore > m.awayScore) points += 3;
-            else if (m.homeScore === m.awayScore) points += 1;
-          } else {
-            if (m.awayScore > m.homeScore) points += 3;
-            else if (m.awayScore === m.homeScore) points += 1;
-          }
-        });
+        const points = pointsMap[season.id]?.[team.id] || 0;
 
         const isFirstInGroup = tIdx === 0;
         const isLastInGroup = tIdx === sortedTeams.length - 1;

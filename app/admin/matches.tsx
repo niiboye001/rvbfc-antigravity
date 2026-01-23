@@ -15,6 +15,15 @@ export default function ManageMatches() {
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', onConfirm: () => { } });
 
+    // Alert State
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({ title: '', message: '' });
+
+    const showCustomAlert = (title: string, message: string) => {
+        setAlertConfig({ title, message });
+        setAlertVisible(true);
+    };
+
     // Form State
     const [homeTeamId, setHomeTeamId] = useState('');
     const [awayTeamId, setAwayTeamId] = useState('');
@@ -62,12 +71,17 @@ export default function ManageMatches() {
     const handleSave = async () => {
         if (!homeTeamId || !awayTeamId || !homeScore || !awayScore) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            Alert.alert('Error', 'Please fill required match details');
+            showCustomAlert('Error', 'Please fill required match details');
             return;
         }
         if (homeTeamId === awayTeamId) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            Alert.alert('Error', 'Home and Away teams cannot be the same.');
+            showCustomAlert('Duplicate Teams', 'The Home Team details cannot be the same as the Away Team.\n\nPlease select two different teams.');
+            return;
+        }
+        if (parseInt(homeScore) < 0 || parseInt(awayScore) < 0) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            showCustomAlert('Invalid Score', 'Football scores cannot be negative! 😅\n\nPlease enter a valid score (0 or higher).');
             return;
         }
         if (!currentSeason) {
@@ -166,6 +180,9 @@ export default function ManageMatches() {
     const getTeamInitials = (id: string) => teams.find(t => t.id === id)?.initials || '??';
     const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Select Player';
 
+    const Container = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
+    const containerProps = Platform.OS === 'ios' ? { behavior: 'padding' as const, className: 'w-full' } : { className: 'w-full' };
+
     return (
         <View className="flex-1 bg-secondary p-4">
             {isSelectionMode ? (
@@ -261,11 +278,18 @@ export default function ManageMatches() {
             />
 
             {/* Main Edit/Create Modal */}
-            <Modal animationType="slide" transparent visible={modalVisible} statusBarTranslucent onRequestClose={() => setModalVisible(false)}>
+            <Modal
+                animationType="slide"
+                transparent
+                visible={modalVisible}
+                statusBarTranslucent
+                navigationBarTranslucent
+                onRequestClose={() => setModalVisible(false)}
+            >
                 <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                     <View className="flex-1 justify-end bg-black/50">
                         <TouchableWithoutFeedback>
-                            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="w-full">
+                            <Container {...containerProps}>
                                 <View className="bg-white rounded-t-[32px] p-6 pb-10 h-[90%]">
                                     <View className="items-center mb-4">
                                         <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
@@ -400,7 +424,7 @@ export default function ManageMatches() {
                                         <View className="h-20" />
                                     </ScrollView>
                                 </View>
-                            </KeyboardAvoidingView>
+                            </Container>
                         </TouchableWithoutFeedback>
                     </View>
                 </TouchableWithoutFeedback>
@@ -412,6 +436,17 @@ export default function ManageMatches() {
                 message={confirmConfig.message}
                 onConfirm={confirmConfig.onConfirm}
                 onCancel={() => setConfirmVisible(false)}
+            />
+
+            <ConfirmationModal
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                onConfirm={() => setAlertVisible(false)}
+                onCancel={() => setAlertVisible(false)}
+                confirmText="Got it"
+                type="info"
+                showCancelButton={false}
             />
 
 

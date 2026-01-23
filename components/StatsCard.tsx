@@ -37,7 +37,7 @@ export default function StatsCard({ title, value, icon: Icon, color = '#3b82f6',
             </View>
 
             <View className="mt-2">
-                <Text className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mb-1">{title}</Text>
+                <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1" numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
                 <View className="flex-row">
                     {isNumber ? (
                         <CountingText
@@ -46,7 +46,7 @@ export default function StatsCard({ title, value, icon: Icon, color = '#3b82f6',
                             className="text-2xl font-black text-slate-900"
                         />
                     ) : (
-                        <Text className="text-2xl font-black text-slate-900">{value}</Text>
+                        <Text className="text-2xl font-black text-slate-900" numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
                     )}
                 </View>
             </View>

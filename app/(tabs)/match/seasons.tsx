@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SectionList, Text, TouchableOpacity, View } from 'react-native';
 import { useLeague } from '../../../context/LeagueContext';
 import { Season } from '../../../types';
@@ -21,12 +21,7 @@ export default function SeasonsScreen() {
         return acc;
     }, []).sort((a, b) => parseInt(b.title.split(' ')[1]) - parseInt(a.title.split(' ')[1])); // Newest year first
 
-    // Initialize with the newest year expanded
-    useEffect(() => {
-        if (allSections.length > 0 && expandedYears.size === 0) {
-            setExpandedYears(new Set([allSections[0].title]));
-        }
-    }, [seasons]);
+
 
     const toggleSection = (title: string) => {
         setExpandedYears(prev => {

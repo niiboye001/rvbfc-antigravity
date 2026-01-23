@@ -5,7 +5,6 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLeague } from '../../context/LeagueContext';
 
 export default function SeasonDetailScreen() {
-    console.log('SeasonDetailScreen rendering');
     const params = useGlobalSearchParams();
     const id = params.id as string;
     const { seasons, matches, teams, players } = useLeague();
@@ -208,29 +207,49 @@ export default function SeasonDetailScreen() {
                 {/* Tab Content */}
                 <View className="px-4">
                     {activeTab === 'TABLE' && (
-                        <View className="bg-white rounded-3xl border border-slate-100 shadow-sm shadow-slate-200 overflow-hidden">
-                            <View className="flex-row bg-slate-50/50 py-4 px-4 border-b border-slate-100">
-                                <Text className="w-8 font-black text-slate-400 text-[10px] uppercase text-center">#</Text>
-                                <Text className="flex-1 font-black text-slate-400 text-[10px] uppercase pl-2">Team</Text>
-                                <Text className="w-8 font-black text-slate-400 text-[10px] uppercase text-center">MP</Text>
-                                <Text className="w-8 font-black text-slate-400 text-[10px] uppercase text-center">GD</Text>
-                                <Text className="w-8 font-black text-slate-900 text-[10px] uppercase text-center">PTS</Text>
+                        <View className="bg-white rounded-2xl overflow-hidden border border-slate-50 mx-1">
+                            {/* Header */}
+                            <View className="flex-row py-3 border-b border-slate-100 px-2 bg-slate-50/50 rounded-t-2xl">
+                                <Text className="w-8 font-bold text-slate-500 text-[10px] text-center">#</Text>
+                                <Text className="flex-1 font-bold text-slate-700 text-[10px] uppercase pl-2">Team</Text>
+                                <Text className="w-8 font-bold text-slate-500 text-[10px] text-center">MP</Text>
+                                <Text className="w-6 font-bold text-slate-500 text-[10px] text-center">W</Text>
+                                <Text className="w-6 font-bold text-slate-500 text-[10px] text-center">D</Text>
+                                <Text className="w-6 font-bold text-slate-500 text-[10px] text-center">L</Text>
+                                <Text className="w-10 font-bold text-slate-500 text-[10px] text-center">+/-</Text>
+                                <Text className="w-9 font-bold text-slate-500 text-[10px] text-center">GD</Text>
+                                <Text className="w-8 font-bold text-slate-700 text-[10px] text-center">PTS</Text>
                             </View>
-                            {tableData.map((row, i) => {
-                                const gdDisplay = (row.gf - row.ga) > 0 ? `+${row.gf - row.ga}` : (row.gf - row.ga);
-                                return (
-                                    <View key={row.team?.id || i} className="flex-row py-3.5 items-center px-4 border-b border-slate-50 last:border-0">
-                                        <View className="w-8 items-center"><Text className={`font-black text-sm ${i < 3 ? 'text-amber-500' : 'text-slate-400'}`}>{i + 1}</Text></View>
-                                        <View className="flex-1 flex-row items-center pl-2">
-                                            <Text className="font-bold text-slate-900 text-sm" numberOfLines={1}>{row.team?.name}</Text>
-                                        </View>
-                                        <Text className="w-8 text-slate-400 font-bold text-xs text-center">{row.p}</Text>
 
+                            {/* Rows */}
+                            {tableData.map((row, i) => {
+                                const goalDiff = row.gf - row.ga;
+                                const gdDisplay = goalDiff > 0 ? `+${goalDiff}` : goalDiff;
+                                return (
+                                    <View key={row.team?.id || i} className="flex-row py-2.5 items-center px-2 border-b border-slate-50/50 hover:bg-slate-50">
                                         <View className="w-8 items-center">
-                                            <View className={`px-1.5 py-0.5 rounded ${row.gf - row.ga > 0 ? 'bg-emerald-50' : 'bg-slate-50'}`}>
-                                                <Text className={`font-bold text-[10px] ${row.gf - row.ga > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>{gdDisplay}</Text>
+                                            <Text className={`font-black text-sm ${i < 3 ? 'text-amber-500' : 'text-slate-900'}`}>{i + 1}</Text>
+                                        </View>
+
+                                        <View className="flex-1 flex-row items-center pl-2">
+                                            <Text className="font-black text-slate-800 text-sm" numberOfLines={1}>{row.team?.name}</Text>
+                                        </View>
+
+                                        <Text className="w-8 text-slate-400 font-bold text-[11px] text-center">{row.p}</Text>
+                                        <Text className="w-6 text-slate-400 font-bold text-[11px] text-center">{row.w}</Text>
+                                        <Text className="w-6 text-slate-400 font-bold text-[11px] text-center">{row.d}</Text>
+                                        <Text className="w-6 text-slate-400 font-bold text-[11px] text-center">{row.l}</Text>
+
+                                        <View className="w-10 items-center">
+                                            <Text className="text-slate-400 font-bold text-[10px] text-center">{row.gf}-{row.ga}</Text>
+                                        </View>
+
+                                        <View className="w-9 items-center">
+                                            <View className="bg-slate-50 px-1.5 py-0.5 rounded-md">
+                                                <Text className={`font-bold text-[10px] ${goalDiff > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>{gdDisplay}</Text>
                                             </View>
                                         </View>
+
                                         <Text className="w-8 text-slate-900 font-black text-sm text-center">{row.pts}</Text>
                                     </View>
                                 );
