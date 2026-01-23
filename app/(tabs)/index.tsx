@@ -1,10 +1,12 @@
+import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Calendar, ChevronRight, TrendingUp, Trophy, User, Users } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { CountingText } from '../../components/CountingText';
 import StatsCard from '../../components/StatsCard';
 import { useLeague } from '../../context/LeagueContext';
@@ -13,6 +15,8 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { teams, players, matches, seasons, currentSeason, refreshData, isLoading } = useLeague();
   const [refreshing, setRefreshing] = useState(false);
+  const [seasonAlertVisible, setSeasonAlertVisible] = useState(false);
+  const isFocused = useIsFocused();
 
   const onRefresh = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -23,22 +27,15 @@ export default function DashboardScreen() {
 
   // Check for missing season for current year
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !isFocused) return;
 
     const currentYear = new Date().getFullYear();
     const hasSeasonForYear = seasons.some(s => s.year === currentYear);
 
     if (!hasSeasonForYear) {
-      Alert.alert(
-        "Action Required",
-        `No season found for ${currentYear}. Please create one in Admin.`,
-        [
-          { text: "Later", style: "cancel" },
-          { text: "Go to Admin", onPress: () => router.push('/admin/seasons') }
-        ]
-      );
+      setSeasonAlertVisible(true);
     }
-  }, [seasons, isLoading]);
+  }, [seasons, isLoading, isFocused]);
 
   // Stats
   const totalTeams = teams.length;
@@ -455,6 +452,20 @@ export default function DashboardScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <ConfirmationModal
+        visible={seasonAlertVisible}
+        title="Action Required"
+        message={`No season found for ${new Date().getFullYear()}. Please create one in Admin to start managing your league.`}
+        confirmText="Go to Admin"
+        cancelText="Later"
+        onConfirm={() => {
+          setSeasonAlertVisible(false);
+          router.push('/admin/seasons');
+        }}
+        onCancel={() => setSeasonAlertVisible(false)}
+        type="info"
+      />
     </SafeAreaView>
   );
 }

@@ -1,6 +1,6 @@
 import { ChevronDown, Edit, Plus, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, Modal, ScrollView, Switch, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useLeague } from '../../context/LeagueContext';
 import { Season } from '../../types';
 
@@ -148,56 +148,60 @@ export default function ManageSeasonsScreen() {
                 transparent={true}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View className="flex-1 bg-black/50 justify-end">
-                    <View className="bg-white rounded-t-3xl p-6 h-[60%]">
-                        <View className="flex-row justify-between items-center mb-6">
-                            <Text className="text-2xl font-black text-slate-900">{isEditing ? 'Edit Season' : 'New Season'}</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <ChevronDown size={28} color="#94a3b8" />
-                            </TouchableOpacity>
-                        </View>
+                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                    <View className="flex-1 bg-black/50 justify-end">
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View className="bg-white rounded-t-3xl p-6 h-[60%]">
+                                <View className="flex-row justify-between items-center mb-6">
+                                    <Text className="text-2xl font-black text-slate-900">{isEditing ? 'Edit Season' : 'New Season'}</Text>
+                                    <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                        <ChevronDown size={28} color="#94a3b8" />
+                                    </TouchableOpacity>
+                                </View>
 
-                        <Text className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider">Year</Text>
-                        <TextInput
-                            className="bg-slate-50 p-4 rounded-xl font-bold text-slate-900 mb-4 border border-slate-100"
-                            placeholder="e.g. 2026"
-                            keyboardType="numeric"
-                            value={year}
-                            onChangeText={setYear}
-                        />
+                                <Text className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider">Year</Text>
+                                <TextInput
+                                    className="bg-slate-50 p-4 rounded-xl font-bold text-slate-900 mb-4 border border-slate-100"
+                                    placeholder="e.g. 2026"
+                                    keyboardType="numeric"
+                                    value={year}
+                                    onChangeText={setYear}
+                                />
 
-                        <Text className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider">Sequence</Text>
-                        <TextInput
-                            className="bg-slate-50 p-4 rounded-xl font-bold text-slate-900 mb-4 border border-slate-100"
-                            placeholder="e.g. 1"
-                            keyboardType="numeric"
-                            value={sequence}
-                            onChangeText={setSequence}
-                        />
+                                <Text className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider">Sequence</Text>
+                                <TextInput
+                                    className="bg-slate-50 p-4 rounded-xl font-bold text-slate-900 mb-4 border border-slate-100"
+                                    placeholder="e.g. 1"
+                                    keyboardType="numeric"
+                                    value={sequence}
+                                    onChangeText={setSequence}
+                                />
 
-                        <View className="flex-row items-center justify-between mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <Text className="font-bold text-slate-900">Set as Current Season</Text>
-                            <Switch
-                                value={isCurrent}
-                                onValueChange={setIsCurrent}
-                                trackColor={{ false: '#cbd5e1', true: '#3b82f6' }}
-                                thumbColor={'#ffffff'}
-                            />
-                        </View>
+                                <View className="flex-row items-center justify-between mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                    <Text className="font-bold text-slate-900">Set as Current Season</Text>
+                                    <Switch
+                                        value={isCurrent}
+                                        onValueChange={setIsCurrent}
+                                        trackColor={{ false: '#cbd5e1', true: '#3b82f6' }}
+                                        thumbColor={'#ffffff'}
+                                    />
+                                </View>
 
-                        <TouchableOpacity
-                            onPress={handleSave}
-                            disabled={saving}
-                            className={`py-4 rounded-xl items-center ${saving ? 'bg-blue-400' : 'bg-blue-600'}`}
-                        >
-                            {saving ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <Text className="text-white font-black text-lg uppercase tracking-widest">{isEditing ? 'Update Season' : 'Create Season'}</Text>
-                            )}
-                        </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleSave}
+                                    disabled={saving}
+                                    className={`py-4 rounded-xl items-center ${saving ? 'bg-blue-400' : 'bg-blue-600'}`}
+                                >
+                                    {saving ? (
+                                        <ActivityIndicator color="white" />
+                                    ) : (
+                                        <Text className="text-white font-black text-lg uppercase tracking-widest">{isEditing ? 'Update Season' : 'Create Season'}</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                </View>
+                </TouchableWithoutFeedback>
             </Modal>
         </View>
     );
