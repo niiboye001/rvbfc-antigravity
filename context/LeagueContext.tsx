@@ -99,61 +99,62 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
                 const { data: seasonsData } = await supabase.from('seasons').select('*');
                 const { data: matchesData } = await supabase.from('matches').select('*, events:match_events(*)');
 
-                if (teamsData && teamsData.length > 0) {
-                    finalTeams = teamsData.map(t => ({
-                        id: t.id,
-                        name: t.name,
-                        initials: t.initials,
-                        color: t.color,
-                        logoUrl: t.logo_url
-                    })) as Team[];
+                // Map Data (even if empty, to ensure we don't fall back to Mock)
+                finalTeams = teamsData?.map(t => ({
+                    id: t.id,
+                    name: t.name,
+                    initials: t.initials,
+                    color: t.color,
+                    logoUrl: t.logo_url
+                })) as Team[] || [];
 
-                    finalPlayers = playersData?.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        teamId: p.team_id,
-                        goals: p.goals,
-                        assists: p.assists,
-                        yellowCards: p.yellow_cards,
-                        redCards: p.red_cards
-                    })) || [];
+                finalPlayers = playersData?.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    teamId: p.team_id,
+                    goals: p.goals,
+                    assists: p.assists,
+                    yellowCards: p.yellow_cards,
+                    redCards: p.red_cards
+                })) || [];
 
-                    finalSeasons = seasonsData?.map(s => ({
-                        id: s.id,
-                        name: s.name,
-                        year: s.year,
-                        sequence: s.sequence,
-                        isCurrent: s.is_current
-                    })) || [];
+                finalSeasons = seasonsData?.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    year: s.year,
+                    sequence: s.sequence,
+                    isCurrent: s.is_current
+                })) || [];
 
-                    finalMatches = matchesData?.map(m => ({
-                        id: m.id,
-                        seasonId: m.season_id,
-                        homeTeamId: m.home_team_id,
-                        awayTeamId: m.away_team_id,
-                        homeScore: m.home_score,
-                        awayScore: m.away_score,
-                        isFinished: m.is_finished,
-                        date: m.date,
-                        events: m.events?.map((ev: any) => ({
-                            id: ev.id,
-                            type: ev.type,
-                            playerId: ev.player_id,
-                            teamId: ev.team_id,
-                            assistantId: ev.assistant_id,
-                            minute: ev.minute
-                        })) || []
-                    })) || [];
+                finalMatches = matchesData?.map(m => ({
+                    id: m.id,
+                    seasonId: m.season_id,
+                    homeTeamId: m.home_team_id,
+                    awayTeamId: m.away_team_id,
+                    homeScore: m.home_score,
+                    awayScore: m.away_score,
+                    isFinished: m.is_finished,
+                    date: m.date,
+                    events: m.events?.map((ev: any) => ({
+                        id: ev.id,
+                        type: ev.type,
+                        playerId: ev.player_id,
+                        teamId: ev.team_id,
+                        assistantId: ev.assistant_id,
+                        minute: ev.minute
+                    })) || []
+                })) || [];
 
-                    setTeams(finalTeams);
-                    setPlayers(finalPlayers);
-                    setSeasons(finalSeasons);
-                    setMatches(finalMatches);
-                    setIsLoading(false);
-                    return; // Loaded from cloud successfully
-                }
+                setTeams(finalTeams);
+                setPlayers(finalPlayers);
+                setSeasons(finalSeasons);
+                setMatches(finalMatches);
+                setIsLoading(false);
+                return;
             } catch (error) {
                 console.error('Supabase fetch error:', error);
+                setIsLoading(false);
+                return;
             }
         }
 

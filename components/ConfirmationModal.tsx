@@ -34,32 +34,36 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onRequestClose={onCancel}
         >
             <TouchableWithoutFeedback onPress={onCancel}>
-                <View className="flex-1 bg-black/60 justify-center items-center p-6">
+                <View className="flex-1 bg-slate-900/40 justify-center items-center p-6 backdrop-blur-sm">
                     <TouchableWithoutFeedback>
-                        <View className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl items-center">
-                            <View className={`w-16 h-16 rounded-full items-center justify-center mb-4 ${type === 'danger' ? 'bg-red-50' : 'bg-blue-50'}`}>
+                        <View className="bg-white w-full max-w-[340px] rounded-[32px] p-8 shadow-2xl items-center border border-white/50">
+                            <View className={`w-20 h-20 rounded-full items-center justify-center mb-6 shadow-sm ${type === 'danger' ? 'bg-red-50' : 'bg-blue-50'}`}>
                                 {type === 'danger' ? (
-                                    <AlertTriangle size={32} color="#ef4444" strokeWidth={2.5} />
+                                    <View className="bg-red-500 w-10 h-10 rounded-full items-center justify-center shadow-lg shadow-red-500/30">
+                                        <AlertTriangle size={20} color="#ffffff" strokeWidth={3} />
+                                    </View>
                                 ) : (
-                                    <Info size={32} color="#3b82f6" strokeWidth={2.5} />
+                                    <View className="bg-blue-500 w-10 h-10 rounded-full items-center justify-center shadow-lg shadow-blue-500/30">
+                                        <Info size={20} color="#ffffff" strokeWidth={3} />
+                                    </View>
                                 )}
                             </View>
 
-                            <Text className="text-xl font-black text-slate-900 text-center mb-2">
+                            <Text className="text-2xl font-black text-slate-900 text-center mb-3 tracking-tight">
                                 {title}
                             </Text>
 
-                            <Text className="text-slate-500 text-center mb-8 font-medium leading-5">
+                            <Text className="text-slate-500 text-center mb-10 font-medium leading-6 text-[15px] px-2">
                                 {message}
                             </Text>
 
                             <View className="w-full gap-3">
                                 <TouchableOpacity
-                                    activeOpacity={0.8}
+                                    activeOpacity={0.9}
                                     onPress={onConfirm}
-                                    className={`w-full py-4 rounded-xl items-center shadow-sm ${type === 'danger' ? 'bg-red-500' : 'bg-blue-500'}`}
+                                    className={`w-full py-4 rounded-2xl items-center shadow-lg transform active:scale-[0.98] ${type === 'danger' ? 'bg-red-500 shadow-red-500/25' : 'bg-blue-600 shadow-blue-500/25'}`}
                                 >
-                                    <Text className="text-white font-bold text-lg tracking-wide">
+                                    <Text className="text-white font-black text-lg tracking-wide uppercase text-sm">
                                         {confirmText}
                                     </Text>
                                 </TouchableOpacity>
@@ -68,9 +72,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                     <TouchableOpacity
                                         activeOpacity={0.7}
                                         onPress={onCancel}
-                                        className="w-full py-4 rounded-xl items-center bg-slate-100"
+                                        className="w-full py-3 items-center"
                                     >
-                                        <Text className="text-slate-600 font-bold text-lg">
+                                        <Text className="text-slate-400 font-bold text-sm tracking-widest uppercase">
                                             {cancelText}
                                         </Text>
                                     </TouchableOpacity>

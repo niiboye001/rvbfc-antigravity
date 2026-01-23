@@ -1,14 +1,16 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ChevronRight, ClipboardList, LogOut, ShieldCheck, UserPlus, Users } from 'lucide-react-native';
-import { useCallback } from 'react';
-import { Alert, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useAuth } from '../../context/AuthContext';
 
 export default function SettingsScreen() {
     const router = useRouter();
 
     const { session, signOut } = useAuth();
+    const [confirmVisible, setConfirmVisible] = useState(false);
 
     // Ensure status bar is dark when this screen is focused
     useFocusEffect(
@@ -19,14 +21,7 @@ export default function SettingsScreen() {
     );
 
     const handleLogout = () => {
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to sign out?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Logout', style: 'destructive', onPress: signOut }
-            ]
-        );
+        setConfirmVisible(true);
     };
 
     const MenuItem = ({ title, icon: Icon, route, color = '#3b82f6' }: any) => (
@@ -109,6 +104,19 @@ export default function SettingsScreen() {
                     </View>
                 </View>
             )}
+
+            <ConfirmationModal
+                visible={confirmVisible}
+                title="Sign Out"
+                message="Are you sure you want to sign out of the Admin Panel?"
+                confirmText="Sign Out"
+                cancelText="Not now"
+                onConfirm={() => {
+                    setConfirmVisible(false);
+                    signOut();
+                }}
+                onCancel={() => setConfirmVisible(false)}
+            />
         </SafeAreaView>
     );
 }

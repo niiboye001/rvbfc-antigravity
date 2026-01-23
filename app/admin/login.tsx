@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { ArrowLeft, Lock, LogIn, Mail, Shield } from 'lucide-react-native';
+import { ArrowLeft, Eye, EyeOff, Lock, LogIn, Mail, Shield } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StatusBar as RNStatusBar, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../services/supabase';
@@ -10,6 +10,7 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -124,10 +125,17 @@ export default function LoginScreen() {
                                         className="flex-1 text-slate-800 ml-3 font-bold text-base"
                                         placeholder="••••••••"
                                         placeholderTextColor="#cbd5e1"
-                                        secureTextEntry
+                                        secureTextEntry={!showPassword}
                                         value={password}
                                         onChangeText={setPassword}
                                     />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-1">
+                                        {showPassword ? (
+                                            <EyeOff size={20} color="#94a3b8" />
+                                        ) : (
+                                            <Eye size={20} color="#94a3b8" />
+                                        )}
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         )}
