@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, Circle, ClipboardList, Info } from 'lucide-react-native';
+import { ChevronLeft, ClipboardList, Info } from 'lucide-react-native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLeague } from '../../context/LeagueContext';
 
@@ -121,7 +121,7 @@ export default function MatchDetailScreen() {
                                             <View className="flex-row items-center flex-1">
                                                 {/* Icon Based on Type */}
                                                 <View className="w-8 items-center justify-center mr-2">
-                                                    {(event.type === 'GOAL' || event.type === 'PENALTY_GOAL') && <Circle size={12} color="#22c55e" fill="#22c55e" />}
+                                                    {(event.type === 'GOAL' || event.type === 'PENALTY_GOAL') && <Text className="text-sm">⚽</Text>}
                                                     {event.type === 'YELLOW_CARD' && <View className="w-3 h-4 bg-yellow-400 rounded-[2px]" />}
                                                     {event.type === 'RED_CARD' && <View className="w-3 h-4 bg-red-500 rounded-[2px]" />}
                                                 </View>

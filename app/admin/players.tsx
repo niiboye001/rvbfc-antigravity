@@ -246,6 +246,34 @@ export default function ManagePlayers() {
                                         </TouchableOpacity>
                                         <View className="h-4" />
                                     </ScrollView>
+
+                                    {teamPickerVisible && (
+                                        <View className="absolute inset-0 bg-white rounded-t-[32px] p-6 z-50">
+                                            <View className="items-center mb-4">
+                                                <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
+                                            </View>
+                                            <Text className="text-xl font-bold mb-6 text-center text-primary">Select Team</Text>
+                                            <FlatList
+                                                data={teams}
+                                                keyExtractor={t => t.id}
+                                                showsVerticalScrollIndicator={false}
+                                                renderItem={({ item }) => (
+                                                    <TouchableOpacity
+                                                        className="p-4 border-b border-slate-100"
+                                                        onPress={() => {
+                                                            setSelectedTeamId(item.id);
+                                                            setTeamPickerVisible(false);
+                                                        }}
+                                                    >
+                                                        <Text className="text-center font-bold text-slate-700">{item.name}</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                            />
+                                            <TouchableOpacity className="mt-4 p-3 items-center" onPress={() => setTeamPickerVisible(false)}>
+                                                <Text className="text-red-500 font-bold">Cancel</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </View>
                             </KeyboardAvoidingView>
                         </TouchableWithoutFeedback>
@@ -262,35 +290,7 @@ export default function ManagePlayers() {
             />
 
 
-            {/* Team Picker Modal */}
-            <Modal animationType="fade" transparent visible={teamPickerVisible} statusBarTranslucent>
-                <View className="flex-1 bg-black/50 justify-center p-6">
-                    <View className="bg-white rounded-3xl p-6 max-h-[60%]">
-                        <View className="items-center mb-4">
-                            <View className="w-12 h-1.5 bg-slate-100 rounded-full" />
-                        </View>
-                        <Text className="text-xl font-bold mb-6 text-center text-primary">Select Team</Text>
-                        <FlatList
-                            data={teams}
-                            keyExtractor={t => t.id}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    className="p-4 border-b border-slate-100"
-                                    onPress={() => {
-                                        setSelectedTeamId(item.id);
-                                        setTeamPickerVisible(false);
-                                    }}
-                                >
-                                    <Text className="text-center font-bold text-slate-700">{item.name}</Text>
-                                </TouchableOpacity>
-                            )}
-                        />
-                        <TouchableOpacity className="mt-4 p-3 items-center" onPress={() => setTeamPickerVisible(false)}>
-                            <Text className="text-red-500 font-bold">Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+
 
         </View>
     );

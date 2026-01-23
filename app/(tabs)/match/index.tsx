@@ -1,4 +1,4 @@
-import { Circle, ClipboardList, Info } from 'lucide-react-native';
+import { ClipboardList, Info } from 'lucide-react-native';
 import { ScrollView, Text, View } from 'react-native';
 import { useLeague } from '../../../context/LeagueContext';
 
@@ -75,8 +75,8 @@ export default function CurrentMatchScreen() {
             </View>
 
             {/* Event Timeline */}
-            <View className="px-6">
-                <View className="bg-white rounded-3xl border border-slate-50 p-6">
+            <View className="px-6 mb-10">
+                <View className="bg-white rounded-3xl p-6 shadow-sm shadow-slate-200 border border-slate-100">
                     <View className="flex-row items-center justify-between mb-8 border-b border-slate-50 pb-4">
                         <View className="flex-row items-center">
                             <View className="bg-blue-500/10 p-2 rounded-xl mr-3">
@@ -84,53 +84,91 @@ export default function CurrentMatchScreen() {
                             </View>
                             <Text className="font-black text-slate-900 text-lg">Match Events</Text>
                         </View>
-                        <Text className="text-slate-300 font-black text-[10px] uppercase tracking-widest">{currentMatch.events.length} Tot</Text>
+                        <View className="bg-blue-50 px-3 py-1 rounded-full">
+                            <Text className="text-blue-600 font-extrabold text-[10px] uppercase tracking-widest">{currentMatch.events.length} Events</Text>
+                        </View>
                     </View>
 
                     {currentMatch.events && currentMatch.events.length > 0 ? (
-                        currentMatch.events.sort((a, b) => (b.minute || 0) - (a.minute || 0)).map((event, idx) => {
-                            const player = players.find(p => p.id === event.playerId);
-                            const isHome = event.teamId === currentMatch.homeTeamId;
-                            const team = isHome ? homeTeam : awayTeam;
+                        <View className="relative">
+                            {/* Central Line */}
+                            <View className="absolute left-[50%] top-2 bottom-2 w-[2px] bg-slate-100 -ml-[1px]" />
 
-                            return (
-                                <View key={event.id} className="mb-10 last:mb-0">
-                                    <View className="flex-1">
-                                        <View className="flex-row items-center justify-between mb-1">
-                                            <View className="flex-row items-center flex-1">
-                                                {event.type === 'GOAL' && (
-                                                    <View className="mr-2">
-                                                        <Circle size={10} color="#22c55e" fill="#22c55e" />
-                                                    </View>
-                                                )}
-                                                {event.type === 'YELLOW_CARD' && (
-                                                    <View className="w-2 h-3 bg-yellow-400 rounded-[1px] mr-2" />
-                                                )}
-                                                {event.type === 'RED_CARD' && (
-                                                    <View className="w-2 h-3 bg-red-500 rounded-[1px] mr-2" />
-                                                )}
-                                                <Text className="font-black text-slate-900 text-base flex-1">
-                                                    {player?.name}
-                                                    {event.type === 'GOAL' && event.assistantId ? (
-                                                        <Text className="text-slate-400 text-xs font-bold"> (Asst: {players.find(p => p.id === event.assistantId)?.name})</Text>
+                            {currentMatch.events.sort((a, b) => (b.minute || 0) - (a.minute || 0)).map((event, idx) => {
+                                const player = players.find(p => p.id === event.playerId);
+                                const isHome = event.teamId === currentMatch.homeTeamId;
+                                const assistant = event.assistantId ? players.find(p => p.id === event.assistantId) : null;
+
+                                return (
+                                    <View key={event.id} className="flex-row items-center mb-8">
+                                        {/* Left Side (Home) */}
+                                        <View className={`flex-1 pr-4 ${isHome ? 'items-end' : ''}`}>
+                                            {isHome && (
+                                                <View className="items-end">
+                                                    <Text className="font-black text-slate-900 text-sm mb-0.5 text-right">{player?.name}</Text>
+                                                    {event.type === 'GOAL' && assistant ? (
+                                                        <Text className="text-slate-400 text-[10px] font-bold text-right mb-1">Asst: {assistant.name}</Text>
                                                     ) : null}
-                                                </Text>
-                                            </View>
-                                            <View className="bg-slate-50 px-2 py-0.5 rounded-md">
-                                                <Text className="text-[10px] font-black text-slate-400 uppercase">{isHome ? 'Home' : 'Away'}</Text>
-                                            </View>
+                                                    {(event.type === 'GOAL' || event.type === 'PENALTY_GOAL') ? (
+                                                        <View className="items-end">
+                                                            {event.type === 'PENALTY_GOAL' && (
+                                                                <Text className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Penalty</Text>
+                                                            )}
+                                                        </View>
+                                                    ) : (
+                                                        <View className="bg-slate-50 px-2 py-0.5 rounded flex-row items-center">
+                                                            <Text className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{event.type.replace('_', ' ')}</Text>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            )}
                                         </View>
-                                        <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{event.type.replace('_', ' ')}</Text>
+
+                                        {/* Center Icon */}
+                                        <View className="z-10 bg-white p-1 rounded-full border-2 border-slate-50 shadow-sm shadow-slate-100 w-8 h-8 items-center justify-center">
+                                            {event.type === 'GOAL' || event.type === 'PENALTY_GOAL' ? (
+                                                <Text className="text-sm">⚽</Text>
+                                            ) : event.type === 'YELLOW_CARD' ? (
+                                                <View className="w-3 h-4 bg-yellow-400 rounded-[2px]" />
+                                            ) : event.type === 'RED_CARD' ? (
+                                                <View className="w-3 h-4 bg-red-500 rounded-[2px]" />
+                                            ) : (
+                                                <View className="w-3 h-3 bg-slate-400 rounded-full" />
+                                            )}
+                                        </View>
+
+                                        {/* Right Side (Away) */}
+                                        <View className={`flex-1 pl-4 ${!isHome ? 'items-start' : ''}`}>
+                                            {!isHome && (
+                                                <View className="items-start">
+                                                    <Text className="font-black text-slate-900 text-sm mb-0.5 text-left">{player?.name}</Text>
+                                                    {event.type === 'GOAL' && assistant ? (
+                                                        <Text className="text-slate-400 text-[10px] font-bold text-left mb-1">Asst: {assistant.name}</Text>
+                                                    ) : null}
+                                                    {(event.type === 'GOAL' || event.type === 'PENALTY_GOAL') ? (
+                                                        <View className="items-start">
+                                                            {event.type === 'PENALTY_GOAL' && (
+                                                                <Text className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Penalty</Text>
+                                                            )}
+                                                        </View>
+                                                    ) : (
+                                                        <View className="bg-slate-50 px-2 py-0.5 rounded flex-row items-center">
+                                                            <Text className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{event.type.replace('_', ' ')}</Text>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            )}
+                                        </View>
                                     </View>
-                                </View>
-                            );
-                        })
+                                );
+                            })}
+                        </View>
                     ) : (
                         <View className="items-center py-10">
-                            <View className="w-16 h-16 rounded-full bg-slate-50 items-center justify-center mb-4">
-                                <Info size={24} color="#cbd5e1" />
+                            <View className="w-16 h-16 rounded-full bg-slate-50 items-center justify-center mb-4 border border-slate-100">
+                                <Info size={24} color="#94a3b8" />
                             </View>
-                            <Text className="text-slate-400 font-bold italic">No events recorded yet</Text>
+                            <Text className="text-slate-400 font-bold text-sm">No events recorded yet</Text>
                         </View>
                     )}
                 </View>

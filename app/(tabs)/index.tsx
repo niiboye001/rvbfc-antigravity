@@ -140,6 +140,7 @@ export default function DashboardScreen() {
 
     // 2. Build Chart Data
     const groupedData: any[] = [];
+    const palette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#6366f1'];
 
     sortedSeasons.forEach((season) => {
       sortedTeams.forEach((team, tIdx) => {
@@ -148,9 +149,12 @@ export default function DashboardScreen() {
         const isFirstInGroup = tIdx === 0;
         const isLastInGroup = tIdx === sortedTeams.length - 1;
 
+        // Use palette to ensure every team has a different color
+        const barColor = palette[tIdx % palette.length];
+
         groupedData.push({
           value: points,
-          frontColor: team.color || '#3b82f6',
+          frontColor: barColor,
           spacing: isLastInGroup ? 24 : 8, // Breathing room between groups
           borderTopLeftRadius: 6,
           borderTopRightRadius: 6,

@@ -1,7 +1,6 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { useFocusEffect, withLayoutContext } from 'expo-router';
-import { useCallback } from 'react';
-import { StatusBar, Text, View } from 'react-native';
+import { withLayoutContext } from 'expo-router';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { Navigator } = createMaterialTopTabNavigator();
@@ -9,13 +8,7 @@ const { Navigator } = createMaterialTopTabNavigator();
 export const MaterialTopTabs = withLayoutContext(Navigator);
 
 export default function MatchLayout() {
-    // Ensure status bar is light when this screen is focused
-    useFocusEffect(
-        useCallback(() => {
-            StatusBar.setBarStyle('light-content');
-            return () => { };
-        }, [])
-    );
+
 
     return (
         <View style={{ flex: 1, backgroundColor: '#ECECEC' }}>
