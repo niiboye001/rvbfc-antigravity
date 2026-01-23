@@ -215,7 +215,7 @@ export default function DashboardScreen() {
             value={totalPlayers}
             icon={User}
             color="#2563eb"
-            onPress={() => router.push('/(tabs)/match')}
+            onPress={() => router.push('/(tabs)/match/table')}
             shouldAnimate={!isLoading}
           />
         </View>
