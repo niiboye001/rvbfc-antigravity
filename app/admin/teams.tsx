@@ -1,15 +1,22 @@
 import * as Haptics from 'expo-haptics';
 import { Check, CheckCircle2, ChevronDown, ChevronUp, Circle, Edit2, Plus, Search, Trash2, X } from 'lucide-react-native';
 import { useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { AlertModal } from '../../components/AlertModal';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
+import { SearchBar } from '../../components/SearchBar';
 import { useLeague } from '../../context/LeagueContext';
 import { Team } from '../../types';
 
 export default function ManageTeams() {
-    const { teams, addTeam, updateTeam, deleteTeam, deleteTeams, seasons, currentSeason } = useLeague();
+    const { teams, addTeam, updateTeam, deleteTeam, deleteTeams, seasons, currentSeason, searchTeams } = useLeague();
     const [modalVisible, setModalVisible] = useState(false);
     const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+
+    // Search State
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<Team[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Accordion State
     const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
@@ -17,6 +24,10 @@ export default function ManageTeams() {
     // Confirmation State
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', onConfirm: () => { } });
+
+    // Alert State
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' }>({ title: '', message: '', type: 'info' });
 
     const [name, setName] = useState('');
     const [initials, setInitials] = useState('');
@@ -64,14 +75,17 @@ export default function ManageTeams() {
         setModalVisible(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!name || !initials) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            Alert.alert('Error', 'Please fill all fields');
+            setAlertConfig({ title: 'Missing Info', message: 'Please fill all fields to continue.', type: 'error' });
+            setAlertVisible(true);
             return;
         }
 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Dismiss keyboard to ensure alert is visible
+        Keyboard.dismiss();
 
         if (editingTeam) {
             updateTeam({
@@ -80,23 +94,34 @@ export default function ManageTeams() {
                 initials,
                 seasonId,
             });
+            setModalVisible(false);
         } else {
-            addTeam({
+            const result = await addTeam({
                 id: Date.now().toString(),
                 name,
                 initials,
                 color: '#3b82f6', // Default color
                 seasonId,
             });
-        }
-        setModalVisible(false);
-        // Ensure the season we just added/moved to is expanded
-        if (seasonId) {
-            setExpandedSeasons(prev => {
-                const next = new Set(prev);
-                next.add(seasonId);
-                return next;
-            });
+
+            if (result.success) {
+                setModalVisible(false);
+                // Ensure the season we just added/moved to is expanded
+                if (seasonId) {
+                    setExpandedSeasons(prev => {
+                        const next = new Set(prev);
+                        next.add(seasonId);
+                        return next;
+                    });
+                }
+            } else if (result.error === 'duplicate') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                setAlertConfig({ title: 'Whoops!', message: 'This team already exists for the selected season.', type: 'error' });
+                setAlertVisible(true);
+            } else {
+                setAlertConfig({ title: 'Error', message: 'Failed to add team.', type: 'error' });
+                setAlertVisible(true);
+            }
         }
     };
 
@@ -237,77 +262,109 @@ export default function ManageTeams() {
                     </View>
                 </View>
             ) : (
-                // Header actions could go here?
-                null
+                <View>
+                    <SearchBar
+                        onSearch={async (query) => {
+                            setSearchQuery(query);
+                            if (!query) {
+                                setIsSearching(false);
+                                setSearchResults([]);
+                                return;
+                            }
+                            setIsSearching(true);
+                            // Optimistic local search if we have data, otherwise use valid context function
+                            if (searchTeams) {
+                                const results = await searchTeams(query);
+                                setSearchResults(results);
+                            } else {
+                                // Fallback if context not updated yet
+                                setSearchResults(teams.filter(t => t.name.toLowerCase().includes(query.toLowerCase())));
+                            }
+                        }}
+                        placeholder="Search teams..."
+                    />
+                </View>
             )}
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-                {/* Removed Global 'Approve New Team' - Use + in Season Header */}
+                {isSearching ? (
+                    <View>
+                        <Text className="font-bold text-slate-400 uppercase tracking-widest mb-4 ml-2">Search Results ({searchResults.length})</Text>
+                        {searchResults.length === 0 ? (
+                            <View className="items-center py-10 opacity-50">
+                                <Search size={40} color="#cbd5e1" />
+                                <Text className="text-slate-400 font-bold mt-2">No teams found</Text>
+                            </View>
+                        ) : (
+                            searchResults.map((team, index) => renderTeamItem(team, index, searchResults.length))
+                        )}
+                    </View>
+                ) : (
+                    seasons.map(season => {
+                        const seasonTeams = teams.filter(t => t.seasonId === season.id);
+                        const isExpanded = expandedSeasons.has(season.id);
+                        // Check if all teams in this season are selected
+                        const allSelected = seasonTeams.length > 0 && seasonTeams.every(t => selectedIds.includes(t.id));
 
-                {seasons.map(season => {
-                    const seasonTeams = teams.filter(t => t.seasonId === season.id);
-                    const isExpanded = expandedSeasons.has(season.id);
-                    // Check if all teams in this season are selected
-                    const allSelected = seasonTeams.length > 0 && seasonTeams.every(t => selectedIds.includes(t.id));
-
-                    return (
-                        <View key={season.id}>
-                            {/* Season Header */}
-                            <TouchableOpacity
-                                onPress={() => toggleSeason(season.id)}
-                                activeOpacity={0.7}
-                                className={`flex-row justify-between items-center p-5 bg-white border-x border-t border-slate-100 shadow-sm shadow-slate-200 mt-4 ${isExpanded ? 'rounded-t-[24px] border-b-0' : 'rounded-[24px] border-b'}`}
-                            >
-                                <View className="flex-row items-center">
-                                    <View className="w-1 h-4 bg-primary rounded-full mr-3" />
-                                    <Text className="text-slate-900 font-black text-base uppercase tracking-widest">{season.name}</Text>
-                                    <View className="bg-slate-100 px-2.5 py-1 rounded-full ml-3">
-                                        <Text className="text-xs font-bold text-slate-500">{seasonTeams.length}</Text>
+                        return (
+                            <View key={season.id}>
+                                {/* Season Header */}
+                                <TouchableOpacity
+                                    onPress={() => toggleSeason(season.id)}
+                                    activeOpacity={0.7}
+                                    className={`flex-row justify-between items-center p-5 bg-white border-x border-t border-slate-100 shadow-sm shadow-slate-200 mt-4 ${isExpanded ? 'rounded-t-[24px] border-b-0' : 'rounded-[24px] border-b'}`}
+                                >
+                                    <View className="flex-row items-center">
+                                        <View className="w-1 h-4 bg-primary rounded-full mr-3" />
+                                        <Text className="text-slate-900 font-black text-base uppercase tracking-widest">{season.name}</Text>
+                                        <View className="bg-slate-100 px-2.5 py-1 rounded-full ml-3">
+                                            <Text className="text-xs font-bold text-slate-500">{seasonTeams.length}</Text>
+                                        </View>
                                     </View>
-                                </View>
 
-                                <View className="flex-row items-center gap-2">
-                                    {isSelectionMode && seasonTeams.length > 0 && (
-                                        <TouchableOpacity onPress={() => handleSelectAll(seasonTeams.map(t => t.id))} className="mr-2">
-                                            <Text className="text-blue-500 text-xs font-bold uppercase tracking-wider">
-                                                {allSelected ? 'Deselect' : 'Select'}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    )}
-                                    {!isSelectionMode && (
-                                        <TouchableOpacity
-                                            onPress={() => openModal(undefined, season.id)}
-                                            className="bg-slate-50 p-1.5 rounded-full mr-1"
-                                        >
-                                            <Plus size={14} color="#3b82f6" />
-                                        </TouchableOpacity>
-                                    )}
-                                    <View className={`p-2 rounded-full ${isExpanded ? 'bg-slate-50' : 'bg-slate-50'}`}>
-                                        {isExpanded ? <ChevronUp size={16} color="#0f172a" /> : <ChevronDown size={16} color="#64748b" />}
+                                    <View className="flex-row items-center gap-2">
+                                        {isSelectionMode && seasonTeams.length > 0 && (
+                                            <TouchableOpacity onPress={() => handleSelectAll(seasonTeams.map(t => t.id))} className="mr-2">
+                                                <Text className="text-blue-500 text-xs font-bold uppercase tracking-wider">
+                                                    {allSelected ? 'Deselect' : 'Select'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        {!isSelectionMode && (
+                                            <TouchableOpacity
+                                                onPress={() => openModal(undefined, season.id)}
+                                                className="bg-slate-50 p-1.5 rounded-full mr-1"
+                                            >
+                                                <Plus size={14} color="#3b82f6" />
+                                            </TouchableOpacity>
+                                        )}
+                                        <View className={`p-2 rounded-full ${isExpanded ? 'bg-slate-50' : 'bg-slate-50'}`}>
+                                            {isExpanded ? <ChevronUp size={16} color="#0f172a" /> : <ChevronDown size={16} color="#64748b" />}
+                                        </View>
                                     </View>
-                                </View>
-                            </TouchableOpacity>
+                                </TouchableOpacity>
 
-                            {/* Accordion Body */}
-                            {isExpanded && (
-                                <View className="bg-white px-3 pb-4 rounded-b-[24px] border-x border-b border-slate-100 shadow-sm shadow-slate-200">
-                                    {seasonTeams.length === 0 ? (
-                                        <View className="p-8 items-center justify-center opacity-50">
-                                            <View className="bg-slate-50 p-4 rounded-full mb-3">
-                                                <Circle size={24} color="#cbd5e1" />
+                                {/* Accordion Body */}
+                                {isExpanded && (
+                                    <View className="bg-white px-3 pb-4 rounded-b-[24px] border-x border-b border-slate-100 shadow-sm shadow-slate-200">
+                                        {seasonTeams.length === 0 ? (
+                                            <View className="p-8 items-center justify-center opacity-50">
+                                                <View className="bg-slate-50 p-4 rounded-full mb-3">
+                                                    <Circle size={24} color="#cbd5e1" />
+                                                </View>
+                                                <Text className="text-slate-400 font-bold text-sm">No teams found</Text>
                                             </View>
-                                            <Text className="text-slate-400 font-bold text-sm">No teams found</Text>
-                                        </View>
-                                    ) : (
-                                        <View className="pt-2">
-                                            {seasonTeams.map((team, index) => renderTeamItem(team, index, seasonTeams.length))}
-                                        </View>
-                                    )}
-                                </View>
-                            )}
-                        </View>
-                    );
-                })}
+                                        ) : (
+                                            <View className="pt-2">
+                                                {seasonTeams.map((team, index) => renderTeamItem(team, index, seasonTeams.length))}
+                                            </View>
+                                        )}
+                                    </View>
+                                )}
+                            </View>
+                        );
+                    })
+                )}
             </ScrollView>
 
             {/* Form Modal */}
@@ -412,6 +469,16 @@ export default function ManageTeams() {
                             </View>
                         </TouchableWithoutFeedback>
                     )}
+
+                    {/* Alert Overlay inside Form Modal */}
+                    <AlertModal
+                        visible={alertVisible}
+                        title={alertConfig.title}
+                        message={alertConfig.message}
+                        type={alertConfig.type}
+                        onClose={() => setAlertVisible(false)}
+                        wrapInModal={false}
+                    />
                 </View>
             </Modal>
 

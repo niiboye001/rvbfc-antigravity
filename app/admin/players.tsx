@@ -1,16 +1,24 @@
+
 import * as Haptics from 'expo-haptics';
-import { CheckCircle2, ChevronDown, Circle, Edit2, Plus, Trash2, X } from 'lucide-react-native';
+import { CheckCircle2, ChevronDown, Circle, Edit2, Plus, Search, Trash2, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AlertModal } from '../../components/AlertModal';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
+import { SearchBar } from '../../components/SearchBar';
 import { useLeague } from '../../context/LeagueContext';
 import { Player } from '../../types';
 
 export default function ManagePlayers() {
-    const { players, teams, addPlayer, updatePlayer, deletePlayer, deletePlayers, currentSeason } = useLeague();
+    const { players, teams, addPlayer, updatePlayer, deletePlayer, deletePlayers, currentSeason, searchPlayers } = useLeague();
     const [modalVisible, setModalVisible] = useState(false);
     const [teamPickerVisible, setTeamPickerVisible] = useState(false);
     const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
+    // Search State
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<Player[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Filter teams for the current season
     const currentSeasonTeams = useMemo(() =>
@@ -21,6 +29,10 @@ export default function ManagePlayers() {
     // Confirmation State
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', onConfirm: () => { } });
+
+    // Alert State
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' }>({ title: '', message: '', type: 'info' });
 
     const [name, setName] = useState('');
     const [selectedTeamId, setSelectedTeamId] = useState('');
@@ -43,14 +55,18 @@ export default function ManagePlayers() {
         setModalVisible(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
+
         if (!name || !selectedTeamId) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            Alert.alert('Error', 'Please fill all fields');
+            setAlertConfig({ title: 'Missing Info', message: 'Please fill all fields to continue.', type: 'error' });
+            setAlertVisible(true);
             return;
         }
 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Dismiss keyboard to ensure alert is visible
+        Keyboard.dismiss();
 
         if (editingPlayer) {
             updatePlayer({
@@ -58,8 +74,9 @@ export default function ManagePlayers() {
                 name,
                 teamId: selectedTeamId,
             });
+            setModalVisible(false);
         } else {
-            addPlayer({
+            const result = await addPlayer({
                 id: Date.now().toString(),
                 name,
                 teamId: selectedTeamId,
@@ -68,8 +85,18 @@ export default function ManagePlayers() {
                 yellowCards: 0,
                 redCards: 0,
             });
+
+            if (result.success) {
+                setModalVisible(false);
+            } else if (result.error === 'duplicate') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                setAlertConfig({ title: 'Whoops!', message: 'This player already exists for the selected team.', type: 'error' });
+                setAlertVisible(true);
+            } else {
+                setAlertConfig({ title: 'Error', message: 'Failed to add player.', type: 'error' });
+                setAlertVisible(true);
+            }
         }
-        setModalVisible(false);
     };
 
     const handleDelete = (player: Player) => {
@@ -101,7 +128,7 @@ export default function ManagePlayers() {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         setConfirmConfig({
             title: 'Bulk Delete',
-            message: `Are you sure you want to delete ${selectedIds.length} players? This action cannot be undone.`,
+            message: `Are you sure you want to delete ${selectedIds.length} players ? This action cannot be undone.`,
             onConfirm: async () => {
                 await deletePlayers(selectedIds);
                 setIsSelectionMode(false);
@@ -157,19 +184,53 @@ export default function ManagePlayers() {
                     </View>
                 </View>
             ) : (
-                <TouchableOpacity
-                    className="bg-primary p-4 rounded-xl flex-row justify-center items-center mb-4"
-                    onPress={() => openModal()}
-                >
-                    <Plus color="#fff" size={20} />
-                    <Text className="text-white font-bold ml-2">Add New Player</Text>
-                </TouchableOpacity>
+                <View>
+                    <TouchableOpacity
+                        className="bg-primary p-4 rounded-xl flex-row justify-center items-center mb-4"
+                        onPress={() => openModal()}
+                    >
+                        <Plus color="#fff" size={20} />
+                        <Text className="text-white font-bold ml-2">Add New Player</Text>
+                    </TouchableOpacity>
+                    <SearchBar
+                        onSearch={async (query) => {
+                            setSearchQuery(query);
+                            if (!query) {
+                                setIsSearching(false);
+                                setSearchResults([]);
+                                return;
+                            }
+                            setIsSearching(true);
+                            // Optimistic local search if we have data, otherwise use valid context function
+                            if (searchPlayers) {
+                                const results = await searchPlayers(query);
+                                setSearchResults(results);
+                            } else {
+                                // Fallback if context not updated yet
+                                setSearchResults(players.filter(p => p.name.toLowerCase().includes(query.toLowerCase())));
+                            }
+                        }}
+                        placeholder="Search players..."
+                    />
+                </View>
             )}
 
             <FlatList
-                data={players}
+                data={isSearching ? searchResults : players}
                 keyExtractor={item => item.id}
                 showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                ListHeaderComponent={
+                    isSearching ? (
+                        <Text className="font-bold text-slate-400 uppercase tracking-widest mb-4 ml-2">Search Results ({searchResults.length})</Text>
+                    ) : null
+                }
+                ListEmptyComponent={
+                    <View className="items-center py-10 opacity-50">
+                        {isSearching ? <Search size={40} color="#cbd5e1" /> : <Circle size={40} color="#cbd5e1" />}
+                        <Text className="text-slate-400 font-bold mt-2">{isSearching ? 'No players found' : 'No players yet'}</Text>
+                    </View>
+                }
                 renderItem={({ item }) => {
                     const isSelected = selectedIds.includes(item.id);
                     return (
@@ -281,6 +342,16 @@ export default function ManagePlayers() {
                                     </TouchableOpacity>
                                 </View>
                             )}
+
+                            {/* Alert Overlay inside Form Modal for correct Z-index */}
+                            <AlertModal
+                                visible={alertVisible}
+                                title={alertConfig.title}
+                                message={alertConfig.message}
+                                type={alertConfig.type}
+                                onClose={() => setAlertVisible(false)}
+                                wrapInModal={false}
+                            />
                         </View>
                     </KeyboardAvoidingView>
                 </View>
@@ -293,10 +364,6 @@ export default function ManagePlayers() {
                 onConfirm={confirmConfig.onConfirm}
                 onCancel={() => setConfirmVisible(false)}
             />
-
-
-
-
-        </View>
+        </View >
     );
 }

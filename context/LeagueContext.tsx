@@ -11,10 +11,10 @@ interface LeagueContextType {
     seasons: Season[];
     currentSeason: Season | null;
     isLoading: boolean;
-    addTeam: (team: Team) => Promise<Team | undefined>;
+    addTeam: (team: Team) => Promise<{ success: boolean; error?: 'duplicate' | 'server_error'; team?: Team }>;
     updateTeam: (team: Team) => void;
     deleteTeam: (id: string) => void;
-    addPlayer: (player: Player) => Promise<Player | undefined>;
+    addPlayer: (player: Player) => Promise<{ success: boolean; error?: 'duplicate' | 'server_error'; player?: Player }>;
     updatePlayer: (player: Player) => void;
     deletePlayer: (id: string) => void;
     addMatch: (match: Match) => Promise<Match | undefined>;
@@ -26,6 +26,8 @@ interface LeagueContextType {
     deleteTeams: (ids: string[]) => Promise<void>;
     deletePlayers: (ids: string[]) => Promise<void>;
     fetchSeasonMatches: (seasonId: string) => Promise<void>;
+    searchTeams: (query: string) => Promise<Team[]>;
+    searchPlayers: (query: string) => Promise<Player[]>;
     refreshData: () => void;
 }
 
@@ -286,8 +288,73 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const addTeam = async (team: Team) => {
-        // Prepare data for Supabase (omit ID)
+    const searchTeams = async (query: string): Promise<Team[]> => {
+        if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
+            // Fallback to local filtering
+            return teams.filter(t => t.name.toLowerCase().includes(query.toLowerCase()));
+        }
+
+        const { data, error } = await supabase
+            .from('teams')
+            .select('*')
+            .ilike('name', `%${query}%`)
+            .limit(20);
+
+        if (error || !data) {
+            console.error('Search teams error:', error);
+            return [];
+        }
+
+        return data.map(t => ({
+            id: t.id,
+            seasonId: t.season_id,
+            name: t.name,
+            initials: t.initials,
+            color: t.color,
+            logoUrl: t.logo_url
+        }));
+    };
+
+    const searchPlayers = async (query: string): Promise<Player[]> => {
+        if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
+            return players.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+        }
+
+        const { data, error } = await supabase
+            .from('players')
+            .select('*')
+            .ilike('name', `%${query}%`)
+            .limit(20);
+
+        if (error || !data) {
+            console.error('Search players error:', error);
+            return [];
+        }
+
+        return data.map(p => ({
+            id: p.id,
+            name: p.name,
+            teamId: p.team_id,
+            goals: p.goals,
+            assists: p.assists,
+            yellowCards: p.yellow_cards,
+            redCards: p.red_cards
+        }));
+    };
+
+    const addTeam = async (team: Team): Promise<{ success: boolean; error?: 'duplicate' | 'server_error'; team?: Team }> => {
+        // 1. Duplicate Check
+        const normalizedName = team.name.trim().toLowerCase();
+        const isDuplicate = teams.some(t =>
+            t.seasonId === team.seasonId &&
+            t.name.trim().toLowerCase() === normalizedName
+        );
+
+        if (isDuplicate) {
+            return { success: false, error: 'duplicate' };
+        }
+
+        // 2. Insert
         const { data, error } = await supabase.from('teams').insert({
             season_id: team.seasonId,
             name: team.name,
@@ -297,7 +364,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) {
             console.error('Error adding team:', error);
-            return;
+            return { success: false, error: 'server_error' };
         }
 
         const newTeam: Team = {
@@ -311,7 +378,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         const updated = [...teams, newTeam];
         setTeams(updated);
         storage.saveData(storage.KEYS.TEAMS, updated);
-        return newTeam;
+        return { success: true, team: newTeam };
     };
 
     const updateTeam = async (team: Team) => {
@@ -372,7 +439,19 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const addPlayer = async (player: Player) => {
+    const addPlayer = async (player: Player): Promise<{ success: boolean; error?: 'duplicate' | 'server_error'; player?: Player }> => {
+        // 1. Duplicate Check
+        const normalizedName = player.name.trim().toLowerCase();
+        const isDuplicate = players.some(p =>
+            p.teamId === player.teamId &&
+            p.name.trim().toLowerCase() === normalizedName
+        );
+
+        if (isDuplicate) {
+            return { success: false, error: 'duplicate' };
+        }
+
+        // 2. Insert
         const { data, error } = await supabase.from('players').insert({
             team_id: player.teamId,
             name: player.name,
@@ -384,7 +463,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) {
             console.error('Error adding player:', error);
-            return;
+            return { success: false, error: 'server_error' };
         }
 
         const newPlayer: Player = {
@@ -400,7 +479,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         const updated = [...players, newPlayer];
         setPlayers(updated);
         storage.saveData(storage.KEYS.PLAYERS, updated);
-        return newPlayer;
+        return { success: true, player: newPlayer };
     };
 
     const updatePlayer = async (player: Player) => {
@@ -715,7 +794,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
             addPlayer, updatePlayer, deletePlayer, deletePlayers,
             addMatch, updateMatch, deleteMatch,
             addSeason, updateSeason, deleteSeason, // Exported
-            fetchSeasonMatches,
+            fetchSeasonMatches, searchTeams, searchPlayers,
             refreshData: loadData
         }}>
             {children}
