@@ -1,10 +1,11 @@
 import { ClipboardList, Info } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { Skeleton } from '../../../components/Skeleton';
 import { useLeague } from '../../../context/LeagueContext';
 
 export default function CurrentMatchScreen() {
-    const { matches, teams, players, currentSeason } = useLeague();
+    const { matches, teams, players, currentSeason, isLoading } = useLeague();
 
     // Logic to find current match (latest or live) for the CURRENT SEASON
     const currentMatch = useMemo(() => {
@@ -15,6 +16,55 @@ export default function CurrentMatchScreen() {
     }, [matches, currentSeason]);
 
     const getTeam = (id: string) => teams.find(t => t.id === id);
+
+    if (isLoading) {
+        return (
+            <ScrollView className="flex-1 bg-secondary" showsVerticalScrollIndicator={false}>
+                <View className="px-5 pt-8 mb-8">
+                    {/* Header Card Skeleton */}
+                    <View className="bg-white rounded-3xl p-8 shadow-lg shadow-blue-100 border border-slate-100 h-64 justify-between">
+                        <View className="items-center mb-4">
+                            <Skeleton width={100} height={20} borderRadius={12} />
+                        </View>
+                        <View className="flex-row justify-between items-center">
+                            <View className="items-center gap-2">
+                                <Skeleton width={60} height={20} />
+                                <Skeleton width={40} height={40} borderRadius={20} />
+                            </View>
+                            <View className="items-center gap-4">
+                                <View className="flex-row items-center gap-4">
+                                    <Skeleton width={40} height={50} />
+                                    <Skeleton width={40} height={50} />
+                                </View>
+                                <Skeleton width={80} height={20} borderRadius={12} />
+                            </View>
+                            <View className="items-center gap-2">
+                                <Skeleton width={60} height={20} />
+                                <Skeleton width={40} height={40} borderRadius={20} />
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Timeline Skeleton */}
+                <View className="px-6">
+                    <View className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 min-h-[300px]">
+                        <View className="flex-row justify-between mb-8 pb-4 border-b border-slate-50">
+                            <Skeleton width={120} height={24} />
+                            <Skeleton width={80} height={24} borderRadius={12} />
+                        </View>
+                        {[1, 2, 3].map(i => (
+                            <View key={i} className="flex-row items-center mb-8 justify-between">
+                                <Skeleton width="40%" height={30} />
+                                <Skeleton width={32} height={32} borderRadius={16} />
+                                <Skeleton width="40%" height={30} />
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </ScrollView>
+        );
+    }
 
     if (!currentMatch) {
         return (
