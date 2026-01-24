@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { Calendar, CheckCircle2, ChevronDown, Circle, Edit2, Plus, Trash2, X } from 'lucide-react-native';
 import { useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useLeague } from '../../context/LeagueContext';
 import { Match, MatchEvent, MatchEventType } from '../../types';
@@ -181,7 +181,9 @@ export default function ManageMatches() {
     const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Select Player';
 
     const Container = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
-    const containerProps = Platform.OS === 'ios' ? { behavior: 'padding' as const, className: 'w-full' } : { className: 'w-full' };
+    const containerProps = Platform.OS === 'ios'
+        ? { behavior: 'padding' as const, className: 'w-full flex-1 justify-end', pointerEvents: 'box-none' as 'box-none' }
+        : { className: 'w-full flex-1 justify-end', pointerEvents: 'box-none' as 'box-none' };
 
     return (
         <View className="flex-1 bg-secondary p-4">
@@ -286,294 +288,298 @@ export default function ManageMatches() {
                 navigationBarTranslucent
                 onRequestClose={() => setModalVisible(false)}
             >
-                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                    <View className="flex-1 justify-end bg-black/50">
-                        <TouchableWithoutFeedback>
-                            <Container {...containerProps}>
-                                <View className="bg-white rounded-t-[32px] h-[90%] overflow-hidden">
-                                    <View className="flex-1 p-6 pb-10">
-                                        <View className="items-center mb-4">
-                                            <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
-                                        </View>
-                                        <View className="flex-row justify-between items-center mb-6">
-                                            <Text className="text-xl font-bold text-primary">{editingMatch ? 'Edit Match' : 'New Match'}</Text>
-                                            <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                                <X size={24} color="#64748b" />
-                                            </TouchableOpacity>
-                                        </View>
+                <View className="flex-1 justify-end bg-black/50">
+                    <TouchableOpacity
+                        className="absolute inset-0"
+                        activeOpacity={1}
+                        onPress={() => setModalVisible(false)}
+                    />
+                    <Container {...containerProps}>
+                        <View className="bg-white rounded-t-[32px] h-[90%] overflow-hidden">
+                            <View className="flex-1 p-6 pb-10">
+                                <View className="items-center mb-4">
+                                    <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
+                                </View>
+                                <View className="flex-row justify-between items-center mb-6">
+                                    <Text className="text-xl font-bold text-primary">{editingMatch ? 'Edit Match' : 'New Match'}</Text>
+                                    <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                        <X size={24} color="#64748b" />
+                                    </TouchableOpacity>
+                                </View>
 
-                                        <ScrollView showsVerticalScrollIndicator={false}>
-                                            {/* Teams & Scores */}
-                                            <View className="bg-slate-50 p-4 rounded-2xl mb-6 border border-slate-100">
-                                                <View className="flex-row justify-between mb-4">
-                                                    <View className="flex-1 mr-2">
-                                                        <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Home Team</Text>
-                                                        <TouchableOpacity className="bg-white p-3 rounded-xl border border-slate-200 flex-row justify-between items-center" onPress={() => setTeamPickerVisible('home')}>
-                                                            <Text className="text-slate-900 font-bold" numberOfLines={1}>{getTeamName(homeTeamId)}</Text>
-                                                            <ChevronDown size={16} color="#94a3b8" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                    <View className="w-20 items-center justify-end pb-3">
-                                                        <Text className="font-bold text-slate-300">VS</Text>
-                                                    </View>
-                                                    <View className="flex-1 ml-2">
-                                                        <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Away Team</Text>
-                                                        <TouchableOpacity className="bg-white p-3 rounded-xl border border-slate-200 flex-row justify-between items-center" onPress={() => setTeamPickerVisible('away')}>
-                                                            <Text className="text-slate-900 font-bold" numberOfLines={1}>{getTeamName(awayTeamId)}</Text>
-                                                            <ChevronDown size={16} color="#94a3b8" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                </View>
-
-                                                <View className="flex-row justify-center items-center gap-4">
-                                                    <View className="items-center">
-                                                        <TextInput
-                                                            className="bg-white w-16 h-16 rounded-2xl text-center font-black text-2xl border border-slate-200 text-slate-900"
-                                                            keyboardType="numeric"
-                                                            value={homeScore}
-                                                            onChangeText={setHomeScore}
-                                                        />
-                                                    </View>
-                                                    <Text className="font-black text-slate-300 text-xl">-</Text>
-                                                    <View className="items-center">
-                                                        <TextInput
-                                                            className="bg-white w-16 h-16 rounded-2xl text-center font-black text-2xl border border-slate-200 text-slate-900"
-                                                            keyboardType="numeric"
-                                                            value={awayScore}
-                                                            onChangeText={setAwayScore}
-                                                        />
-                                                    </View>
-                                                </View>
-                                            </View>
-
-                                            {/* Events Section */}
-                                            <View className="mb-6">
-                                                <View className="flex-row justify-between items-center mb-4">
-                                                    <Text className="font-bold text-lg text-slate-900">Match Events</Text>
-                                                    <TouchableOpacity onPress={() => setEventModalVisible(true)} className="flex-row items-center bg-blue-50 px-3 py-1.5 rounded-full">
-                                                        <Plus size={14} color="#3b82f6" />
-                                                        <Text className="text-blue-600 font-bold text-xs ml-1">Add Event</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-
-                                                {events.length === 0 ? (
-                                                    <View className="bg-slate-50 p-6 rounded-2xl items-center border border-dashed border-slate-200">
-                                                        <Text className="text-slate-400 text-sm">No events recorded</Text>
-                                                    </View>
-                                                ) : (
-                                                    events.map((ev, index) => (
-                                                        <View key={index} className="flex-row justify-between py-3 border-b border-slate-100 last:border-0 items-center">
-                                                            <View className="flex-row items-center flex-1">
-                                                                <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${ev.type === 'GOAL' || ev.type === 'PENALTY_GOAL' ? 'bg-green-100' : ev.type === 'RED_CARD' ? 'bg-red-100' : 'bg-yellow-100'}`}>
-                                                                    <View className={`w-3 h-3 rounded-full ${ev.type === 'GOAL' || ev.type === 'PENALTY_GOAL' ? 'bg-green-500' : ev.type === 'RED_CARD' ? 'bg-red-500' : 'bg-yellow-500'}`} />
-                                                                </View>
-                                                                <View>
-                                                                    <Text className="font-bold text-slate-800 text-sm">{ev.type.replace('_', ' ')}</Text>
-                                                                    <Text className="text-xs text-slate-500">{getPlayerName(ev.playerId)}</Text>
-                                                                </View>
-                                                            </View>
-                                                            <TouchableOpacity onPress={() => setEvents(events.filter((_, i) => i !== index))} className="p-2">
-                                                                <X size={16} color="#cbd5e1" />
-                                                            </TouchableOpacity>
-                                                        </View>
-                                                    ))
-                                                )}
-                                            </View>
-
-                                            <TouchableOpacity className="bg-primary p-4 rounded-xl items-center mb-8" onPress={handleSave}>
-                                                <Text className="text-white font-bold text-lg">Save Match Result</Text>
-                                            </TouchableOpacity>
-                                            <View className="h-20" />
-                                        </ScrollView>
-                                    </View>
-
-                                    {/* Team Picker Overlay */}
-                                    {!!teamPickerVisible && (
-                                        <View className="absolute inset-0 bg-white z-50 rounded-t-[32px] p-6">
-                                            <Text className="text-xl font-bold mb-6 text-center text-primary">
-                                                Select {teamPickerVisible === 'home' ? 'Home' : 'Away'} Team
-                                            </Text>
-                                            <FlatList
-                                                data={teams.filter(t => t.seasonId === currentSeason?.id).filter(t => {
-                                                    if (teamPickerVisible === 'home') return t.id !== awayTeamId;
-                                                    if (teamPickerVisible === 'away') return t.id !== homeTeamId;
-                                                    return true;
-                                                })}
-                                                keyExtractor={t => t.id}
-                                                showsVerticalScrollIndicator={false}
-                                                renderItem={({ item }) => (
-                                                    <TouchableOpacity
-                                                        className="p-4 border-b border-slate-100 flex-row items-center"
-                                                        onPress={() => {
-                                                            if (teamPickerVisible === 'home') setHomeTeamId(item.id);
-                                                            if (teamPickerVisible === 'away') setAwayTeamId(item.id);
-                                                            setTeamPickerVisible(null);
-                                                        }}
-                                                    >
-                                                        <View className="w-10 h-10 rounded-full bg-slate-100 items-center justify-center mr-3">
-                                                            <Text className="font-bold text-slate-500">{item.initials}</Text>
-                                                        </View>
-                                                        <Text className="text-lg font-bold text-slate-900">{item.name}</Text>
-                                                    </TouchableOpacity>
-                                                )}
-                                                ListEmptyComponent={
-                                                    <Text className="text-center text-slate-400 mt-10">No available teams</Text>
-                                                }
-                                            />
-                                            <TouchableOpacity className="mt-4 p-4 bg-slate-100 rounded-xl items-center" onPress={() => setTeamPickerVisible(null)}>
-                                                <Text className="text-slate-600 font-bold">Cancel</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    )}
-
-                                    {eventModalVisible && (
-                                        <View className="absolute inset-0 bg-white z-[60] rounded-t-[32px] p-6 h-full">
-                                            <View className="flex-row justify-between items-center mb-6">
-                                                <Text className="text-xl font-bold text-primary">Add Event</Text>
-                                                <TouchableOpacity onPress={() => setEventModalVisible(false)}>
-                                                    <X size={24} color="#64748b" />
+                                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                                    {/* Teams & Scores */}
+                                    <View className="bg-slate-50 p-4 rounded-2xl mb-6 border border-slate-100">
+                                        <View className="flex-row justify-between mb-4">
+                                            <View className="flex-1 mr-2">
+                                                <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Home Team</Text>
+                                                <TouchableOpacity className="bg-white p-3 rounded-xl border border-slate-200 flex-row justify-between items-center" onPress={() => setTeamPickerVisible('home')}>
+                                                    <Text className="text-slate-900 font-bold" numberOfLines={1}>{getTeamName(homeTeamId)}</Text>
+                                                    <ChevronDown size={16} color="#94a3b8" />
                                                 </TouchableOpacity>
                                             </View>
+                                            <View className="w-20 items-center justify-end pb-3">
+                                                <Text className="font-bold text-slate-300">VS</Text>
+                                            </View>
+                                            <View className="flex-1 ml-2">
+                                                <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Away Team</Text>
+                                                <TouchableOpacity className="bg-white p-3 rounded-xl border border-slate-200 flex-row justify-between items-center" onPress={() => setTeamPickerVisible('away')}>
+                                                    <Text className="text-slate-900 font-bold" numberOfLines={1}>{getTeamName(awayTeamId)}</Text>
+                                                    <ChevronDown size={16} color="#94a3b8" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
 
-                                            <ScrollView showsVerticalScrollIndicator={false}>
-                                                <View className="flex-row mb-6 flex-wrap gap-2">
-                                                    {['GOAL', 'PENALTY_GOAL', 'ASSIST', 'YELLOW_CARD', 'RED_CARD'].map((type) => (
-                                                        <TouchableOpacity
-                                                            key={type}
-                                                            className={`p-2 px-4 rounded-full border ${eventType === type ? 'bg-primary border-primary' : 'bg-white border-slate-200'}`}
-                                                            onPress={() => setEventType(type as MatchEventType)}
-                                                        >
-                                                            <Text className={`font-bold text-xs ${eventType === type ? 'text-white' : 'text-slate-600'}`}>{type}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
+                                        <View className="flex-row justify-center items-center gap-4">
+                                            <View className="items-center">
+                                                <TextInput
+                                                    className="bg-white w-16 h-16 rounded-2xl text-center font-black text-2xl border border-slate-200 text-slate-900"
+                                                    keyboardType="numeric"
+                                                    value={homeScore}
+                                                    onChangeText={setHomeScore}
+                                                />
+                                            </View>
+                                            <Text className="font-black text-slate-300 text-xl">-</Text>
+                                            <View className="items-center">
+                                                <TextInput
+                                                    className="bg-white w-16 h-16 rounded-2xl text-center font-black text-2xl border border-slate-200 text-slate-900"
+                                                    keyboardType="numeric"
+                                                    value={awayScore}
+                                                    onChangeText={setAwayScore}
+                                                />
+                                            </View>
+                                        </View>
+                                    </View>
+
+                                    {/* Events Section */}
+                                    <View className="mb-6">
+                                        <View className="flex-row justify-between items-center mb-4">
+                                            <Text className="font-bold text-lg text-slate-900">Match Events</Text>
+                                            <TouchableOpacity onPress={() => setEventModalVisible(true)} className="flex-row items-center bg-blue-50 px-3 py-1.5 rounded-full">
+                                                <Plus size={14} color="#3b82f6" />
+                                                <Text className="text-blue-600 font-bold text-xs ml-1">Add Event</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {events.length === 0 ? (
+                                            <View className="bg-slate-50 p-6 rounded-2xl items-center border border-dashed border-slate-200">
+                                                <Text className="text-slate-400 text-sm">No events recorded</Text>
+                                            </View>
+                                        ) : (
+                                            events.map((ev, index) => (
+                                                <View key={index} className="flex-row justify-between py-3 border-b border-slate-100 last:border-0 items-center">
+                                                    <View className="flex-row items-center flex-1">
+                                                        <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${ev.type === 'GOAL' || ev.type === 'PENALTY_GOAL' ? 'bg-green-100' : ev.type === 'RED_CARD' ? 'bg-red-100' : 'bg-yellow-100'}`}>
+                                                            <View className={`w-3 h-3 rounded-full ${ev.type === 'GOAL' || ev.type === 'PENALTY_GOAL' ? 'bg-green-500' : ev.type === 'RED_CARD' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                                                        </View>
+                                                        <View>
+                                                            <Text className="font-bold text-slate-800 text-sm">{ev.type.replace('_', ' ')}</Text>
+                                                            <Text className="text-xs text-slate-500">{getPlayerName(ev.playerId)}</Text>
+                                                        </View>
+                                                    </View>
+                                                    <TouchableOpacity onPress={() => setEvents(events.filter((_, i) => i !== index))} className="p-2">
+                                                        <X size={16} color="#cbd5e1" />
+                                                    </TouchableOpacity>
                                                 </View>
+                                            ))
+                                        )}
+                                    </View>
 
-                                                <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Select Team</Text>
-                                                <View className="flex-row mb-6 gap-3">
-                                                    {[homeTeamId, awayTeamId].map(id => {
-                                                        const team = teams.find(t => t.id === id);
-                                                        if (!team) return null;
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={id}
-                                                                className={`flex-1 p-4 rounded-xl border-2 items-center ${eventTeamId === id ? 'border-primary bg-blue-50' : 'border-slate-100 bg-slate-50'}`}
-                                                                onPress={() => {
-                                                                    setEventTeamId(id);
-                                                                    setEventPlayerId('');
-                                                                    setEventAssistantId('');
-                                                                }}
-                                                            >
-                                                                <Text className={`font-bold ${eventTeamId === id ? 'text-primary' : 'text-slate-500'}`}>{team.name}</Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })}
+                                    <TouchableOpacity className="bg-primary p-4 rounded-xl items-center mb-8" onPress={handleSave}>
+                                        <Text className="text-white font-bold text-lg">Save Match Result</Text>
+                                    </TouchableOpacity>
+                                    <View className="h-20" />
+                                </ScrollView>
+                            </View>
+
+                            {/* Team Picker Overlay */}
+                            {!!teamPickerVisible && (
+                                <View className="absolute inset-0 bg-white z-50 rounded-t-[32px] p-6">
+                                    <Text className="text-xl font-bold mb-6 text-center text-primary">
+                                        Select {teamPickerVisible === 'home' ? 'Home' : 'Away'} Team
+                                    </Text>
+                                    <FlatList
+                                        className="flex-1"
+                                        data={teams.filter(t => t.seasonId === currentSeason?.id).filter(t => {
+                                            if (teamPickerVisible === 'home') return t.id !== awayTeamId;
+                                            if (teamPickerVisible === 'away') return t.id !== homeTeamId;
+                                            return true;
+                                        })}
+                                        keyExtractor={t => t.id}
+                                        showsVerticalScrollIndicator={false}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                className="p-4 border-b border-slate-100 flex-row items-center"
+                                                onPress={() => {
+                                                    if (teamPickerVisible === 'home') setHomeTeamId(item.id);
+                                                    if (teamPickerVisible === 'away') setAwayTeamId(item.id);
+                                                    setTeamPickerVisible(null);
+                                                }}
+                                            >
+                                                <View className="w-10 h-10 rounded-full bg-slate-100 items-center justify-center mr-3">
+                                                    <Text className="font-bold text-slate-500">{item.initials}</Text>
                                                 </View>
+                                                <Text className="text-lg font-bold text-slate-900">{item.name}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        ListEmptyComponent={
+                                            <Text className="text-center text-slate-400 mt-10">No available teams</Text>
+                                        }
+                                    />
+                                    <TouchableOpacity className="mt-4 p-4 bg-slate-100 rounded-xl items-center" onPress={() => setTeamPickerVisible(null)}>
+                                        <Text className="text-slate-600 font-bold">Cancel</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
 
-                                                <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Player</Text>
+                            {eventModalVisible && (
+                                <View className="absolute inset-0 bg-white z-[60] rounded-t-[32px] p-6 h-full">
+                                    <View className="flex-row justify-between items-center mb-6">
+                                        <Text className="text-xl font-bold text-primary">Add Event</Text>
+                                        <TouchableOpacity onPress={() => setEventModalVisible(false)}>
+                                            <X size={24} color="#64748b" />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                                        <View className="flex-row mb-6 flex-wrap gap-2">
+                                            {['GOAL', 'PENALTY_GOAL', 'ASSIST', 'YELLOW_CARD', 'RED_CARD'].map((type) => (
                                                 <TouchableOpacity
-                                                    className={`p-4 rounded-xl mb-4 flex-row justify-between items-center border ${!eventTeamId ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-slate-200'}`}
+                                                    key={type}
+                                                    className={`p-2 px-4 rounded-full border ${eventType === type ? 'bg-primary border-primary' : 'bg-white border-slate-200'}`}
+                                                    onPress={() => setEventType(type as MatchEventType)}
+                                                >
+                                                    <Text className={`font-bold text-xs ${eventType === type ? 'text-white' : 'text-slate-600'}`}>{type}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+
+                                        <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Select Team</Text>
+                                        <View className="flex-row mb-6 gap-3">
+                                            {[homeTeamId, awayTeamId].map(id => {
+                                                const team = teams.find(t => t.id === id);
+                                                if (!team) return null;
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={id}
+                                                        className={`flex-1 p-4 rounded-xl border-2 items-center ${eventTeamId === id ? 'border-primary bg-blue-50' : 'border-slate-100 bg-slate-50'}`}
+                                                        onPress={() => {
+                                                            setEventTeamId(id);
+                                                            setEventPlayerId('');
+                                                            setEventAssistantId('');
+                                                        }}
+                                                    >
+                                                        <Text className={`font-bold ${eventTeamId === id ? 'text-primary' : 'text-slate-500'}`}>{team.name}</Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
+                                        </View>
+
+                                        <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Player</Text>
+                                        <TouchableOpacity
+                                            className={`p-4 rounded-xl mb-4 flex-row justify-between items-center border ${!eventTeamId ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-slate-200'}`}
+                                            onPress={() => {
+                                                if (!eventTeamId) Alert.alert('Select team first');
+                                                else setEventPlayerPickerVisible(true);
+                                            }}
+                                            disabled={!eventTeamId}
+                                        >
+                                            <Text className="text-slate-800 font-bold">{getPlayerName(eventPlayerId)}</Text>
+                                            <ChevronDown size={20} color="#64748b" />
+                                        </TouchableOpacity>
+
+                                        {['GOAL', 'PENALTY_GOAL'].includes(eventType) && (
+                                            <>
+                                                <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Assistant (Optional)</Text>
+                                                <TouchableOpacity
+                                                    className={`p-4 rounded-xl mb-6 flex-row justify-between items-center border ${!eventTeamId ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-slate-200'}`}
                                                     onPress={() => {
                                                         if (!eventTeamId) Alert.alert('Select team first');
-                                                        else setEventPlayerPickerVisible(true);
+                                                        else setEventAssistantPickerVisible(true);
                                                     }}
                                                     disabled={!eventTeamId}
                                                 >
-                                                    <Text className="text-slate-800 font-bold">{getPlayerName(eventPlayerId)}</Text>
+                                                    <Text className="text-slate-800 font-bold">{eventAssistantId ? getPlayerName(eventAssistantId) : 'None'}</Text>
                                                     <ChevronDown size={20} color="#64748b" />
                                                 </TouchableOpacity>
+                                            </>
+                                        )}
 
-                                                {['GOAL', 'PENALTY_GOAL'].includes(eventType) && (
-                                                    <>
-                                                        <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Assistant (Optional)</Text>
-                                                        <TouchableOpacity
-                                                            className={`p-4 rounded-xl mb-6 flex-row justify-between items-center border ${!eventTeamId ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-slate-200'}`}
-                                                            onPress={() => {
-                                                                if (!eventTeamId) Alert.alert('Select team first');
-                                                                else setEventAssistantPickerVisible(true);
-                                                            }}
-                                                            disabled={!eventTeamId}
-                                                        >
-                                                            <Text className="text-slate-800 font-bold">{eventAssistantId ? getPlayerName(eventAssistantId) : 'None'}</Text>
-                                                            <ChevronDown size={20} color="#64748b" />
-                                                        </TouchableOpacity>
-                                                    </>
-                                                )}
+                                        <TouchableOpacity className="bg-primary p-4 rounded-xl items-center mt-2" onPress={handleAddEvent}>
+                                            <Text className="text-white font-bold text-lg">Add Event</Text>
+                                        </TouchableOpacity>
+                                        <View className="h-10" />
+                                    </ScrollView>
 
-                                                <TouchableOpacity className="bg-primary p-4 rounded-xl items-center mt-2" onPress={handleAddEvent}>
-                                                    <Text className="text-white font-bold text-lg">Add Event</Text>
+                                    {/* Player Picker Overlay */}
+                                    {eventPlayerPickerVisible && (
+                                        <View className="absolute inset-0 bg-white z-[70] rounded-t-[32px] p-6 h-full">
+                                            <View className="flex-row justify-between items-center mb-6">
+                                                <Text className="text-xl font-bold text-slate-900">Select Player</Text>
+                                                <TouchableOpacity onPress={() => setEventPlayerPickerVisible(false)}>
+                                                    <X size={24} color="#64748b" />
                                                 </TouchableOpacity>
-                                                <View className="h-10" />
-                                            </ScrollView>
+                                            </View>
+                                            <FlatList
+                                                className="flex-1"
+                                                data={players.filter(p => p.teamId === eventTeamId)}
+                                                keyExtractor={p => p.id}
+                                                showsVerticalScrollIndicator={false}
+                                                renderItem={({ item }) => (
+                                                    <TouchableOpacity
+                                                        className="p-4 bg-slate-50 rounded-xl mb-3 border border-slate-100 flex-row items-center"
+                                                        onPress={() => {
+                                                            setEventPlayerId(item.id);
+                                                            setEventPlayerPickerVisible(false);
+                                                        }}
+                                                    >
+                                                        <View className="w-10 h-10 rounded-full bg-slate-200 items-center justify-center mr-3">
+                                                            <Text className="font-bold text-slate-500">{item.name.substring(0, 1)}</Text>
+                                                        </View>
+                                                        <Text className="font-bold text-slate-700 text-lg">{item.name}</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                                ListEmptyComponent={<Text className="text-center text-slate-400 mt-10">No players found.</Text>}
+                                            />
+                                        </View>
+                                    )}
 
-                                            {/* Player Picker Overlay */}
-                                            {eventPlayerPickerVisible && (
-                                                <View className="absolute inset-0 bg-white z-[70] rounded-t-[32px] p-6 h-full">
-                                                    <View className="flex-row justify-between items-center mb-6">
-                                                        <Text className="text-xl font-bold text-slate-900">Select Player</Text>
-                                                        <TouchableOpacity onPress={() => setEventPlayerPickerVisible(false)}>
-                                                            <X size={24} color="#64748b" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                    <FlatList
-                                                        data={players.filter(p => p.teamId === eventTeamId)}
-                                                        keyExtractor={p => p.id}
-                                                        showsVerticalScrollIndicator={false}
-                                                        renderItem={({ item }) => (
-                                                            <TouchableOpacity
-                                                                className="p-4 bg-slate-50 rounded-xl mb-3 border border-slate-100 flex-row items-center"
-                                                                onPress={() => {
-                                                                    setEventPlayerId(item.id);
-                                                                    setEventPlayerPickerVisible(false);
-                                                                }}
-                                                            >
-                                                                <View className="w-10 h-10 rounded-full bg-slate-200 items-center justify-center mr-3">
-                                                                    <Text className="font-bold text-slate-500">{item.name.substring(0, 1)}</Text>
-                                                                </View>
-                                                                <Text className="font-bold text-slate-700 text-lg">{item.name}</Text>
-                                                            </TouchableOpacity>
-                                                        )}
-                                                        ListEmptyComponent={<Text className="text-center text-slate-400 mt-10">No players found.</Text>}
-                                                    />
-                                                </View>
-                                            )}
-
-                                            {/* Assistant Picker Overlay */}
-                                            {eventAssistantPickerVisible && (
-                                                <View className="absolute inset-0 bg-white z-[70] rounded-t-[32px] p-6 h-full">
-                                                    <View className="flex-row justify-between items-center mb-6">
-                                                        <Text className="text-xl font-bold text-slate-900">Select Assistant</Text>
-                                                        <TouchableOpacity onPress={() => setEventAssistantPickerVisible(false)}>
-                                                            <X size={24} color="#64748b" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                    <FlatList
-                                                        data={[{ id: '', name: 'None' }, ...players.filter(p => p.teamId === eventTeamId && p.id !== eventPlayerId)]}
-                                                        keyExtractor={p => p.id}
-                                                        showsVerticalScrollIndicator={false}
-                                                        renderItem={({ item }) => (
-                                                            <TouchableOpacity
-                                                                className="p-4 bg-slate-50 rounded-xl mb-3 border border-slate-100 flex-row items-center"
-                                                                onPress={() => {
-                                                                    setEventAssistantId(item.id);
-                                                                    setEventAssistantPickerVisible(false);
-                                                                }}
-                                                            >
-                                                                <View className="w-10 h-10 rounded-full bg-slate-200 items-center justify-center mr-3">
-                                                                    <Text className="font-bold text-slate-500">{item.name.substring(0, 1)}</Text>
-                                                                </View>
-                                                                <Text className="font-bold text-slate-700 text-lg">{item.name}</Text>
-                                                            </TouchableOpacity>
-                                                        )}
-                                                    />
-                                                </View>
-                                            )}
+                                    {/* Assistant Picker Overlay */}
+                                    {eventAssistantPickerVisible && (
+                                        <View className="absolute inset-0 bg-white z-[70] rounded-t-[32px] p-6 h-full">
+                                            <View className="flex-row justify-between items-center mb-6">
+                                                <Text className="text-xl font-bold text-slate-900">Select Assistant</Text>
+                                                <TouchableOpacity onPress={() => setEventAssistantPickerVisible(false)}>
+                                                    <X size={24} color="#64748b" />
+                                                </TouchableOpacity>
+                                            </View>
+                                            <FlatList
+                                                className="flex-1"
+                                                data={[{ id: '', name: 'None' }, ...players.filter(p => p.teamId === eventTeamId && p.id !== eventPlayerId)]}
+                                                keyExtractor={p => p.id}
+                                                showsVerticalScrollIndicator={false}
+                                                renderItem={({ item }) => (
+                                                    <TouchableOpacity
+                                                        className="p-4 bg-slate-50 rounded-xl mb-3 border border-slate-100 flex-row items-center"
+                                                        onPress={() => {
+                                                            setEventAssistantId(item.id);
+                                                            setEventAssistantPickerVisible(false);
+                                                        }}
+                                                    >
+                                                        <View className="w-10 h-10 rounded-full bg-slate-200 items-center justify-center mr-3">
+                                                            <Text className="font-bold text-slate-500">{item.name.substring(0, 1)}</Text>
+                                                        </View>
+                                                        <Text className="font-bold text-slate-700 text-lg">{item.name}</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                            />
                                         </View>
                                     )}
                                 </View>
-                            </Container>
-                        </TouchableWithoutFeedback>
-                    </View>
-                </TouchableWithoutFeedback>
+                            )}
+                        </View>
+                    </Container>
+                </View>
             </Modal>
 
             <ConfirmationModal
@@ -600,6 +606,6 @@ export default function ManageMatches() {
 
 
 
-        </View>
+        </View >
     );
 }
