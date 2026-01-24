@@ -1,5 +1,4 @@
 import { Inter_400Regular, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -7,7 +6,6 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import "./global.css";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider } from '../context/AuthContext';
 import { LeagueProvider } from '../context/LeagueContext';
 
@@ -18,7 +16,6 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded, error] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
@@ -41,16 +38,14 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <LeagueProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="admin" options={{ headerShown: false }} />
-            <Stack.Screen name="season/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="admin" options={{ headerShown: false }} />
+          <Stack.Screen name="season/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style="auto" />
       </LeagueProvider>
     </AuthProvider>
   );

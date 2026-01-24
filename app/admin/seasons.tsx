@@ -1,6 +1,7 @@
 import { ChevronDown, Edit, Plus, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, Modal, ScrollView, Switch, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useLeague } from '../../context/LeagueContext';
 import { Season } from '../../types';
 
@@ -8,6 +9,10 @@ export default function ManageSeasonsScreen() {
     const { seasons, addSeason, updateSeason, deleteSeason, isLoading } = useLeague();
     const [isModalVisible, setModalVisible] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    // Confirmation Modal State
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [seasonToDelete, setSeasonToDelete] = useState<{ id: string, name: string } | null>(null);
 
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
@@ -70,24 +75,20 @@ export default function ManageSeasonsScreen() {
     };
 
     const handleDelete = (id: string, name: string) => {
-        Alert.alert(
-            "Delete Season",
-            `Are you sure you want to delete ${name}? This action cannot be undone and will delete all associated matches.`,
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await deleteSeason(id);
-                        } catch (e) {
-                            Alert.alert("Error", "Could not delete season. It might be linked to other data.");
-                        }
-                    }
-                }
-            ]
-        );
+        setSeasonToDelete({ id, name });
+        setDeleteModalVisible(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!seasonToDelete) return;
+
+        try {
+            await deleteSeason(seasonToDelete.id);
+            setDeleteModalVisible(false);
+            setSeasonToDelete(null);
+        } catch (e) {
+            Alert.alert("Error", "Could not delete season. It might be linked to other data.");
+        }
     };
 
     return (
@@ -203,6 +204,17 @@ export default function ManageSeasonsScreen() {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
+
+            <ConfirmationModal
+                visible={deleteModalVisible}
+                title="Delete Season?"
+                message={`Are you sure you want to delete ${seasonToDelete?.name}? This action cannot be undone and will delete all associated matches.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteModalVisible(false)}
+                type="danger"
+            />
         </View>
     );
 }

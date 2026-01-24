@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { LucideIcon } from 'lucide-react-native';
+import { ArrowUpRight, LucideIcon } from 'lucide-react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { CountingText } from './CountingText';
 
@@ -27,23 +27,25 @@ export default function StatsCard({ title, value, icon: Icon, color = '#3b82f6',
         <TouchableOpacity
             activeOpacity={onPress ? 0.7 : 1}
             onPress={handlePress}
-            className="bg-card p-5 rounded-2xl flex-1 border border-slate-100 shadow-sm shadow-slate-200"
+            className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200 relative overflow-hidden"
         >
-            <View className="flex-row justify-between items-start mb-2">
+            <View className="flex-row justify-between items-start mb-4">
                 <View className="w-10 h-10 rounded-xl items-center justify-center bg-blue-50">
-                    <Icon size={20} color={color} />
+                    <Icon size={18} color={color} />
                 </View>
-                {/* Optional Top Right Indicator if needed, else empty */}
+                <View className="bg-slate-50 px-2 py-1 rounded-md">
+                    <ArrowUpRight size={10} color="#94a3b8" />
+                </View>
             </View>
 
             <View className="mt-2">
-                <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1" numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1" numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
                 <View className="flex-row">
                     {isNumber ? (
                         <CountingText
                             value={numericValue}
                             shouldAnimate={shouldAnimate}
-                            className="text-2xl font-black text-slate-900"
+                            className="text-3xl font-black text-slate-900 tracking-tighter"
                         />
                     ) : (
                         <Text className="text-2xl font-black text-slate-900" numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
