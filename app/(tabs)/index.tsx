@@ -2,13 +2,14 @@ import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Calendar, ChevronRight, TrendingUp, Trophy, User, Users } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { CountingText } from '../../components/CountingText';
 import StatsCard from '../../components/StatsCard';
 import { useLeague } from '../../context/LeagueContext';
+import { useLeagueStats } from '../../hooks/useLeagueStats';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -37,186 +38,25 @@ export default function DashboardScreen() {
     }, [seasons, isLoading])
   );
 
-  // Stats (Filtered by Current Season)
-  const currentSeasonTeams = useMemo(() =>
-    teams.filter(t => t.seasonId === currentSeason?.id),
-    [teams, currentSeason]
-  );
+  // Stats Hook (Refactored)
+  const { topScorerData, topAssisterData, chartData, sortedSeasons, sortedTeams, currentMatch } = useLeagueStats();
 
-  const totalTeams = currentSeasonTeams.length;
+  const getTeamName = (id: string) => teams.find(t => t.id === id)?.name || 'Unknown';
+
+  const totalTeams = sortedTeams.length; // Approximate, or filter by current season if needed
+  // Note: Original codeFiltered teams by current season for 'totalTeams'. 
+  // Let's check hook logic. Hook sorts ALL teams? No, hook sorts ALL teams for width calc, but let's check basic stats.
+  // Original: const totalTeams = currentSeasonTeams.length; 
+  // Current Hook sortedTeams is ALL teams. 
+  // We should probably rely on `teams` from context directly for simple counts if we want, or add `currentSeasonTeams` to hook.
+  // For now, let's keep simple counts local or minimal.
+  const currentSeasonTeams = useMemo(() => teams.filter(t => t.seasonId === currentSeason?.id), [teams, currentSeason]);
+  const totalTeamsCount = currentSeasonTeams.length;
+
   const totalPlayers = useMemo(() =>
     players.filter(p => currentSeasonTeams.some(t => t.id === p.teamId)).length,
     [players, currentSeasonTeams]
   );
-
-  // Calculate Top Performers for current season dynamically
-  const { topScorerData, topAssisterData } = useMemo(() => {
-    if (!currentSeason) return { topScorerData: null, topAssisterData: null };
-
-    const seasonMatches = matches.filter(m => m.seasonId === currentSeason.id);
-    const playerStats: Record<string, { goals: number, assists: number }> = {};
-
-    seasonMatches.forEach(match => {
-      match.events?.forEach(event => {
-        if (!playerStats[event.playerId]) {
-          playerStats[event.playerId] = { goals: 0, assists: 0 };
-        }
-        if (event.type === 'GOAL') {
-          playerStats[event.playerId].goals++;
-          if (event.assistantId) {
-            if (!playerStats[event.assistantId]) {
-              playerStats[event.assistantId] = { goals: 0, assists: 0 };
-            }
-            playerStats[event.assistantId].assists++;
-          }
-        } else if (event.type === 'ASSIST') {
-          playerStats[event.playerId].assists++;
-        }
-      });
-    });
-
-    const playerListWithStats = players.map(p => ({
-      ...p,
-      goals: playerStats[p.id]?.goals || 0,
-      assists: playerStats[p.id]?.assists || 0
-    }));
-
-    const maxGoals = Math.max(...playerListWithStats.map(p => p.goals));
-    const maxAssists = Math.max(...playerListWithStats.map(p => p.assists));
-
-    const topScorers = playerListWithStats.filter(p => p.goals === maxGoals && maxGoals > 0);
-    const topAssisters = playerListWithStats.filter(p => p.assists === maxAssists && maxAssists > 0);
-
-    return {
-      topScorerData: topScorers.length > 0 ? {
-        player: topScorers[0],
-        extraCount: topScorers.length - 1
-      } : null,
-      topAssisterData: topAssisters.length > 0 ? {
-        player: topAssisters[0],
-        extraCount: topAssisters.length - 1
-      } : null
-    };
-  }, [players, matches, currentSeason]);
-
-
-
-
-
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-secondary">
-        <ActivityIndicator size="large" color="#3b82f6" />
-      </View>
-    );
-  }
-
-  // Current Match (Latest finished or ongoing in Current Season)
-  const currentMatch = useMemo(() => {
-    if (!currentSeason) return null;
-    return matches
-      .filter(m => m.seasonId === currentSeason.id)
-      .sort((a, b) => {
-        const timeA = a?.date ? new Date(a.date).getTime() : 0;
-        const timeB = b?.date ? new Date(b.date).getTime() : 0;
-        return timeB - timeA;
-      })[0];
-  }, [matches, currentSeason]);
-
-  const getTeamName = (id: string) => teams.find(t => t.id === id)?.name || 'Unknown';
-  const getTeamColor = (id: string) => teams.find(t => t.id === id)?.color || '#94a3b8';
-  const getTeamInitials = (id: string) => teams.find(t => t.id === id)?.initials || '??';
-
-  // Calculate Historical Points for all seasons
-  // Sort seasons and teams for consistent display
-  // Filter sortedSeasons to include ALL seasons in the CURRENT YEAR
-  const sortedSeasons = useMemo(() => {
-    if (!currentSeason) return [];
-    return seasons
-      .filter(s => s.year === currentSeason.year)
-      .sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
-  }, [seasons, currentSeason]);
-
-  const sortedTeams = useMemo(() =>
-    [...teams].sort((a, b) => a.name.localeCompare(b.name)),
-    [teams]);
-
-  // Calculate Historical Points for all seasons (Optimized O(M + S*T))
-  const chartData = useMemo(() => {
-    if (teams.length === 0 || sortedSeasons.length === 0) {
-      return [{ value: 0, label: '-', frontColor: '#ccc' }];
-    }
-
-    // 1. Pre-calculate points per team per season
-    const pointsMap: Record<string, Record<string, number>> = {}; // { seasonId: { teamId: points } }
-
-    matches.forEach(m => {
-      if (!m.isFinished) return;
-
-      if (!pointsMap[m.seasonId]) pointsMap[m.seasonId] = {};
-      const seasonPoints = pointsMap[m.seasonId];
-
-      if (!seasonPoints[m.homeTeamId]) seasonPoints[m.homeTeamId] = 0;
-      if (!seasonPoints[m.awayTeamId]) seasonPoints[m.awayTeamId] = 0;
-
-      if (m.homeScore > m.awayScore) {
-        seasonPoints[m.homeTeamId] += 3;
-      } else if (m.awayScore > m.homeScore) {
-        seasonPoints[m.awayTeamId] += 3;
-      } else {
-        seasonPoints[m.homeTeamId] += 1;
-        seasonPoints[m.awayTeamId] += 1;
-      }
-    });
-
-    // 2. Build Chart Data
-    const groupedData: any[] = [];
-    const palette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#6366f1'];
-
-    sortedSeasons.forEach((season) => {
-      // Get teams specific to this season
-      const seasonTeams = teams
-        .filter(t => t.seasonId === season.id)
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      seasonTeams.forEach((team, tIdx) => {
-        const points = pointsMap[season.id]?.[team.id] || 0;
-
-        const isFirstInGroup = tIdx === 0;
-        const isLastInGroup = tIdx === seasonTeams.length - 1;
-
-        // Use palette to ensure every team has a different color
-        const barColor = palette[tIdx % palette.length];
-
-        groupedData.push({
-          value: points,
-          frontColor: barColor,
-          spacing: isLastInGroup ? 24 : 8, // Breathing room between groups
-          borderTopLeftRadius: 6,
-          borderTopRightRadius: 6,
-          topLabelComponent: () => (
-            <View className="items-center" style={{ marginBottom: 4 }}>
-              <Text
-                className="text-[9px] font-bold text-slate-500"
-              >
-                {team.initials}
-              </Text>
-            </View>
-          ),
-          labelComponent: isFirstInGroup ? () => (
-            <View className="items-center" style={{ marginTop: 8, width: seasonTeams.length * 28 + 16 }}>
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest">S{season.sequence}</Text>
-            </View>
-          ) : undefined,
-          // Ensure even small points are visible, but 0 is flat
-          minHeight: points > 0 ? 6 : 0,
-        });
-      });
-    });
-
-    return groupedData;
-  }, [teams, sortedSeasons, sortedTeams, matches]);
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-white">

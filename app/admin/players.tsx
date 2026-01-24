@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { CheckCircle2, ChevronDown, Circle, Edit2, Plus, Trash2, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useLeague } from '../../context/LeagueContext';
 import { Player } from '../../types';
@@ -211,81 +211,79 @@ export default function ManagePlayers() {
 
             {/* Form Modal */}
             <Modal animationType="slide" transparent visible={modalVisible} statusBarTranslucent onRequestClose={() => setModalVisible(false)}>
-                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                    <View className="flex-1 justify-end bg-black/50">
-                        <TouchableWithoutFeedback>
-                            <KeyboardAvoidingView
-                                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                                className="w-full"
-                            >
-                                <View className="bg-white rounded-t-[32px] p-6 pb-10">
+                <View className="flex-1 justify-end bg-black/50">
+                    <TouchableOpacity className="absolute inset-0" activeOpacity={1} onPress={() => setModalVisible(false)} />
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                        className="w-full"
+                        pointerEvents="box-none"
+                    >
+                        <View className="bg-white rounded-t-[32px] p-6 pb-10">
+                            <View className="items-center mb-4">
+                                <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
+                            </View>
+                            <View className="flex-row justify-between items-center mb-6">
+                                <Text className="text-xl font-bold text-primary">{editingPlayer ? 'Edit Player' : 'New Player'}</Text>
+                                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                    <X size={24} color="#64748b" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <ScrollView showsVerticalScrollIndicator={false}>
+                                <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Player Name</Text>
+                                <TextInput
+                                    className="bg-white border border-slate-300 p-4 rounded-xl mb-4 text-slate-800 font-medium"
+                                    placeholder="e.g. John Doe"
+                                    placeholderTextColor="#94a3b8"
+                                    value={name}
+                                    onChangeText={setName}
+                                />
+
+                                <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Team</Text>
+                                <TouchableOpacity
+                                    className="bg-white border border-slate-300 p-4 rounded-xl mb-6 flex-row justify-between items-center"
+                                    onPress={() => setTeamPickerVisible(true)}
+                                >
+                                    <Text className="text-slate-800 font-bold">{getTeamName(selectedTeamId) || 'Select Team'}</Text>
+                                    <ChevronDown size={20} color="#64748b" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity className="bg-primary p-4 rounded-xl items-center" onPress={handleSave}>
+                                    <Text className="text-white font-bold text-lg">Save Player</Text>
+                                </TouchableOpacity>
+                                <View className="h-4" />
+                            </ScrollView>
+
+                            {teamPickerVisible && (
+                                <View className="absolute inset-0 bg-white rounded-t-[32px] p-6 z-50">
                                     <View className="items-center mb-4">
                                         <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
                                     </View>
-                                    <View className="flex-row justify-between items-center mb-6">
-                                        <Text className="text-xl font-bold text-primary">{editingPlayer ? 'Edit Player' : 'New Player'}</Text>
-                                        <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                            <X size={24} color="#64748b" />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    <ScrollView showsVerticalScrollIndicator={false}>
-                                        <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Player Name</Text>
-                                        <TextInput
-                                            className="bg-white border border-slate-300 p-4 rounded-xl mb-4 text-slate-800 font-medium"
-                                            placeholder="e.g. John Doe"
-                                            placeholderTextColor="#94a3b8"
-                                            value={name}
-                                            onChangeText={setName}
-                                        />
-
-                                        <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Team</Text>
-                                        <TouchableOpacity
-                                            className="bg-white border border-slate-300 p-4 rounded-xl mb-6 flex-row justify-between items-center"
-                                            onPress={() => setTeamPickerVisible(true)}
-                                        >
-                                            <Text className="text-slate-800 font-bold">{getTeamName(selectedTeamId) || 'Select Team'}</Text>
-                                            <ChevronDown size={20} color="#64748b" />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity className="bg-primary p-4 rounded-xl items-center" onPress={handleSave}>
-                                            <Text className="text-white font-bold text-lg">Save Player</Text>
-                                        </TouchableOpacity>
-                                        <View className="h-4" />
-                                    </ScrollView>
-
-                                    {teamPickerVisible && (
-                                        <View className="absolute inset-0 bg-white rounded-t-[32px] p-6 z-50">
-                                            <View className="items-center mb-4">
-                                                <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
-                                            </View>
-                                            <Text className="text-xl font-bold mb-6 text-center text-primary">Select Team</Text>
-                                            <FlatList
-                                                data={currentSeasonTeams}
-                                                keyExtractor={t => t.id}
-                                                showsVerticalScrollIndicator={false}
-                                                renderItem={({ item }) => (
-                                                    <TouchableOpacity
-                                                        className="p-4 border-b border-slate-100"
-                                                        onPress={() => {
-                                                            setSelectedTeamId(item.id);
-                                                            setTeamPickerVisible(false);
-                                                        }}
-                                                    >
-                                                        <Text className="text-center font-bold text-slate-700">{item.name}</Text>
-                                                    </TouchableOpacity>
-                                                )}
-                                            />
-                                            <TouchableOpacity className="mt-4 p-3 items-center" onPress={() => setTeamPickerVisible(false)}>
-                                                <Text className="text-red-500 font-bold">Cancel</Text>
+                                    <Text className="text-xl font-bold mb-6 text-center text-primary">Select Team</Text>
+                                    <FlatList
+                                        data={currentSeasonTeams}
+                                        keyExtractor={t => t.id}
+                                        showsVerticalScrollIndicator={false}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                className="p-4 border-b border-slate-100"
+                                                onPress={() => {
+                                                    setSelectedTeamId(item.id);
+                                                    setTeamPickerVisible(false);
+                                                }}
+                                            >
+                                                <Text className="text-center font-bold text-slate-700">{item.name}</Text>
                                             </TouchableOpacity>
-                                        </View>
-                                    )}
+                                        )}
+                                    />
+                                    <TouchableOpacity className="mt-4 p-3 items-center" onPress={() => setTeamPickerVisible(false)}>
+                                        <Text className="text-red-500 font-bold">Cancel</Text>
+                                    </TouchableOpacity>
                                 </View>
-                            </KeyboardAvoidingView>
-                        </TouchableWithoutFeedback>
-                    </View>
-                </TouchableWithoutFeedback>
+                            )}
+                        </View>
+                    </KeyboardAvoidingView>
+                </View>
             </Modal>
 
             <ConfirmationModal

@@ -25,6 +25,7 @@ interface LeagueContextType {
     deleteSeason: (id: string) => Promise<void>;
     deleteTeams: (ids: string[]) => Promise<void>;
     deletePlayers: (ids: string[]) => Promise<void>;
+    fetchSeasonMatches: (seasonId: string) => Promise<void>;
     refreshData: () => void;
 }
 
@@ -34,6 +35,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     const [teams, setTeams] = useState<Team[]>([]);
     const [players, setPlayers] = useState<Player[]>([]);
     const [matches, setMatches] = useState<Match[]>([]);
+    const [loadedSeasonIds, setLoadedSeasonIds] = useState<Set<string>>(new Set());
     const [seasons, setSeasons] = useState<Season[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -100,9 +102,31 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
                 const { data: teamsData } = await supabase.from('teams').select('*');
                 const { data: playersData } = await supabase.from('players').select('*');
                 const { data: seasonsData } = await supabase.from('seasons').select('*');
-                const { data: matchesData } = await supabase.from('matches').select('*, events:match_events(*)');
 
-                // Map Data (even if empty, to ensure we don't fall back to Mock)
+                // 1. Get Seasons first to find current
+                finalSeasons = seasonsData?.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    year: s.year,
+                    sequence: s.sequence,
+                    isCurrent: s.is_current
+                })) || [];
+
+                const currentSeason = finalSeasons.find(s => s.isCurrent) || finalSeasons[0];
+                const currentSeasonId = currentSeason?.id;
+
+                // 2. Fetch Matches ONLY for current season initially
+                let initialMatchesData: any[] = [];
+                if (currentSeasonId) {
+                    const { data: currentMatches } = await supabase
+                        .from('matches')
+                        .select('*, events:match_events(*)')
+                        .eq('season_id', currentSeasonId);
+                    initialMatchesData = currentMatches || [];
+                    setLoadedSeasonIds(new Set([currentSeasonId]));
+                }
+
+                // Map Data
                 finalTeams = teamsData?.map(t => ({
                     id: t.id,
                     seasonId: t.season_id,
@@ -122,15 +146,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
                     redCards: p.red_cards
                 })) || [];
 
-                finalSeasons = seasonsData?.map(s => ({
-                    id: s.id,
-                    name: s.name,
-                    year: s.year,
-                    sequence: s.sequence,
-                    isCurrent: s.is_current
-                })) || [];
-
-                finalMatches = matchesData?.map(m => ({
+                finalMatches = initialMatchesData.map(m => ({
                     id: m.id,
                     seasonId: m.season_id,
                     homeTeamId: m.home_team_id,
@@ -147,7 +163,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
                         assistantId: ev.assistant_id,
                         minute: ev.minute
                     })) || []
-                })) || [];
+                }));
 
                 setTeams(finalTeams);
                 setPlayers(finalPlayers);
@@ -224,6 +240,50 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         setSeasons(finalSeasons);
         setMatches(finalMatches);
         setIsLoading(false);
+    };
+
+    const fetchSeasonMatches = async (seasonId: string) => {
+        if (loadedSeasonIds.has(seasonId)) return; // Already loaded
+
+        if (process.env.EXPO_PUBLIC_SUPABASE_URL) {
+            try {
+                const { data } = await supabase
+                    .from('matches')
+                    .select('*, events:match_events(*)')
+                    .eq('season_id', seasonId);
+
+                if (data) {
+                    const newMatches = data.map(m => ({
+                        id: m.id,
+                        seasonId: m.season_id,
+                        homeTeamId: m.home_team_id,
+                        awayTeamId: m.away_team_id,
+                        homeScore: m.home_score,
+                        awayScore: m.away_score,
+                        isFinished: m.is_finished,
+                        date: m.date,
+                        events: m.events?.map((ev: any) => ({
+                            id: ev.id,
+                            type: ev.type,
+                            playerId: ev.player_id,
+                            teamId: ev.team_id,
+                            assistantId: ev.assistant_id,
+                            minute: ev.minute
+                        })) || []
+                    }));
+
+                    setMatches(prev => {
+                        // Avoid duplicates if any
+                        const existingIds = new Set(prev.map(m => m.id));
+                        const uniqueNew = newMatches.filter((m: Match) => !existingIds.has(m.id));
+                        return [...prev, ...uniqueNew];
+                    });
+                    setLoadedSeasonIds(prev => new Set([...prev, seasonId]));
+                }
+            } catch (error) {
+                console.error('Error fetching season matches:', error);
+            }
+        }
     };
 
     const addTeam = async (team: Team) => {
@@ -678,6 +738,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
             addPlayer, updatePlayer, deletePlayer, deletePlayers,
             addMatch, updateMatch, deleteMatch,
             addSeason, updateSeason, deleteSeason, // Exported
+            fetchSeasonMatches,
             refreshData: loadData
         }}>
             {children}

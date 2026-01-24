@@ -318,101 +318,101 @@ export default function ManageTeams() {
                     setModalVisible(false);
                 }
             }}>
-                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                    <View className="flex-1 justify-end bg-black/50">
-                        <TouchableWithoutFeedback>
-                            <KeyboardAvoidingView
-                                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                                className="w-full"
+                <View className="flex-1 justify-end bg-black/50">
+                    <TouchableOpacity className="absolute inset-0" activeOpacity={1} onPress={() => setModalVisible(false)} />
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                        className="w-full"
+                        pointerEvents="box-none"
+                    >
+                        <ScrollView className="bg-white rounded-t-[32px]" contentContainerClassName="p-6 pb-10">
+                            <View className="items-center mb-4">
+                                <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
+                            </View>
+                            <View className="flex-row justify-between items-center mb-6">
+                                <Text className="text-xl font-bold text-primary">{editingTeam ? 'Edit Team' : 'New Team'}</Text>
+                                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                    <X size={24} color="#64748b" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Assigned Season</Text>
+                            <TouchableOpacity
+                                onPress={() => setSeasonSelectorVisible(true)}
+                                className="bg-slate-50 border border-slate-200 p-4 rounded-xl mb-6 flex-row justify-between items-center"
                             >
-                                <ScrollView className="bg-white rounded-t-[32px]" contentContainerClassName="p-6 pb-10">
-                                    <View className="items-center mb-4">
-                                        <View className="w-12 h-1.5 bg-slate-200 rounded-full" />
-                                    </View>
-                                    <View className="flex-row justify-between items-center mb-6">
-                                        <Text className="text-xl font-bold text-primary">{editingTeam ? 'Edit Team' : 'New Team'}</Text>
-                                        <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                            <X size={24} color="#64748b" />
-                                        </TouchableOpacity>
-                                    </View>
+                                <Text className="font-bold text-slate-800">
+                                    {seasons.find(s => s.id === seasonId)?.name || 'Select Season'}
+                                </Text>
+                                <ChevronDown size={20} color="#64748b" />
+                            </TouchableOpacity>
+                            <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Team Name</Text>
+                            <TextInput
+                                className="bg-white border border-slate-300 p-4 rounded-xl mb-4 text-slate-800 font-medium"
+                                placeholder="e.g. Red vs Blue FC"
+                                placeholderTextColor="#94a3b8"
+                                value={name}
+                                onChangeText={setName}
+                            />
 
-                                    <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Assigned Season</Text>
-                                    <TouchableOpacity
-                                        onPress={() => setSeasonSelectorVisible(true)}
-                                        className="bg-slate-50 border border-slate-200 p-4 rounded-xl mb-6 flex-row justify-between items-center"
-                                    >
-                                        <Text className="font-bold text-slate-800">
-                                            {seasons.find(s => s.id === seasonId)?.name || 'Select Season'}
-                                        </Text>
-                                        <ChevronDown size={20} color="#64748b" />
+                            <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Initials (Logo)</Text>
+                            <TextInput
+                                className="bg-white border border-slate-300 p-4 rounded-xl mb-6 text-slate-800 font-medium"
+                                placeholder="e.g. RvB"
+                                placeholderTextColor="#94a3b8"
+                                value={initials}
+                                onChangeText={setInitials}
+                                maxLength={4}
+                            />
+
+                            <TouchableOpacity className="bg-primary p-4 rounded-xl items-center" onPress={handleSave}>
+                                <Text className="text-white font-bold text-lg">Save Team</Text>
+                            </TouchableOpacity>
+                            <View className="h-4" />
+                        </ScrollView>
+                    </KeyboardAvoidingView>
+
+                    {/* Season Selector Overlay */}
+                    {seasonSelectorVisible && (
+                        <TouchableWithoutFeedback onPress={() => { /* Do nothing on content press */ }}>
+                            <View className="absolute bottom-0 left-0 right-0 top-24 bg-white rounded-t-[32px] overflow-hidden shadow-2xl">
+                                <View className="p-4 border-b border-slate-100 flex-row items-center gap-3">
+                                    <TouchableOpacity onPress={() => setSeasonSelectorVisible(false)} className="bg-slate-100 p-2 rounded-full">
+                                        <X size={20} color="#0f172a" />
                                     </TouchableOpacity>
-                                    <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Team Name</Text>
-                                    <TextInput
-                                        className="bg-white border border-slate-300 p-4 rounded-xl mb-4 text-slate-800 font-medium"
-                                        placeholder="e.g. Red vs Blue FC"
-                                        placeholderTextColor="#94a3b8"
-                                        value={name}
-                                        onChangeText={setName}
-                                    />
-
-                                    <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Initials (Logo)</Text>
-                                    <TextInput
-                                        className="bg-white border border-slate-300 p-4 rounded-xl mb-6 text-slate-800 font-medium"
-                                        placeholder="e.g. RvB"
-                                        placeholderTextColor="#94a3b8"
-                                        value={initials}
-                                        onChangeText={setInitials}
-                                        maxLength={4}
-                                    />
-
-                                    <TouchableOpacity className="bg-primary p-4 rounded-xl items-center" onPress={handleSave}>
-                                        <Text className="text-white font-bold text-lg">Save Team</Text>
-                                    </TouchableOpacity>
-                                    <View className="h-4" />
-                                </ScrollView>
-                            </KeyboardAvoidingView>
-                        </TouchableWithoutFeedback>
-                        {/* Season Selector Overlay */}
-                        {seasonSelectorVisible && (
-                            <TouchableWithoutFeedback onPress={() => { /* Do nothing on content press */ }}>
-                                <View className="absolute bottom-0 left-0 right-0 top-24 bg-white rounded-t-[32px] overflow-hidden shadow-2xl">
-                                    <View className="p-4 border-b border-slate-100 flex-row items-center gap-3">
-                                        <TouchableOpacity onPress={() => setSeasonSelectorVisible(false)} className="bg-slate-100 p-2 rounded-full">
-                                            <X size={20} color="#0f172a" />
-                                        </TouchableOpacity>
-                                        <Text className="text-lg font-black text-slate-900">Select Season</Text>
-                                    </View>
-                                    <View className="p-4">
-                                        <View className="flex-row items-center bg-slate-100 p-3 rounded-xl mb-2">
-                                            <Search size={20} color="#94a3b8" />
-                                            <TextInput
-                                                className="flex-1 ml-2 font-medium text-slate-900"
-                                                placeholder="Search seasons..."
-                                                value={seasonSearch}
-                                                onChangeText={setSeasonSearch}
-                                                autoFocus
-                                            />
-                                        </View>
-                                    </View>
-                                    <FlatList
-                                        data={filteredSeasons}
-                                        keyExtractor={item => item.id}
-                                        contentContainerStyle={{ paddingBottom: 40 }}
-                                        renderItem={({ item }) => (
-                                            <TouchableOpacity
-                                                onPress={() => { setSeasonId(item.id); setSeasonSelectorVisible(false); }}
-                                                className="p-4 border-b border-slate-50 flex-row justify-between items-center"
-                                            >
-                                                <Text className={`font-bold text-lg ${seasonId === item.id ? 'text-blue-600' : 'text-slate-800'}`}>{item.name}</Text>
-                                                {seasonId === item.id && <Check size={20} color="#2563eb" />}
-                                            </TouchableOpacity>
-                                        )}
-                                    />
+                                    <Text className="text-lg font-black text-slate-900">Select Season</Text>
                                 </View>
-                            </TouchableWithoutFeedback>
-                        )}
-                    </View>
-                </TouchableWithoutFeedback>
+                                <View className="p-4">
+                                    <View className="flex-row items-center bg-slate-100 p-3 rounded-xl mb-2">
+                                        <Search size={20} color="#94a3b8" />
+                                        <TextInput
+                                            className="flex-1 ml-2 font-medium text-slate-900"
+                                            placeholder="Search seasons..."
+                                            value={seasonSearch}
+                                            onChangeText={setSeasonSearch}
+                                            autoFocus
+                                        />
+                                    </View>
+                                </View>
+                                <FlatList
+                                    className="flex-1"
+                                    data={filteredSeasons}
+                                    keyExtractor={item => item.id}
+                                    contentContainerStyle={{ paddingBottom: 40 }}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            onPress={() => { setSeasonId(item.id); setSeasonSelectorVisible(false); }}
+                                            className="p-4 border-b border-slate-50 flex-row justify-between items-center"
+                                        >
+                                            <Text className={`font-bold text-lg ${seasonId === item.id ? 'text-blue-600' : 'text-slate-800'}`}>{item.name}</Text>
+                                            {seasonId === item.id && <Check size={20} color="#2563eb" />}
+                                        </TouchableOpacity>
+                                    )}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
+                    )}
+                </View>
             </Modal>
 
 
