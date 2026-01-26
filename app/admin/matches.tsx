@@ -50,6 +50,18 @@ export default function ManageMatches() {
     const sortedMatches = [...matches].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const openModal = (match?: Match) => {
+        if (!match) {
+            const seasonTeams = teams.filter(t => t.seasonId === currentSeason?.id);
+            if (seasonTeams.length < 2) {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                showCustomAlert(
+                    'Insufficient Teams',
+                    'You need to create at least 2 teams in the current season to record a match result.'
+                );
+                return;
+            }
+        }
+
         if (match) {
             setEditingMatch(match);
             setHomeTeamId(match.homeTeamId);
@@ -185,6 +197,9 @@ export default function ManageMatches() {
         ? { behavior: 'padding' as const, className: 'w-full flex-1 justify-end', pointerEvents: 'box-none' as 'box-none' }
         : { className: 'w-full flex-1 justify-end', pointerEvents: 'box-none' as 'box-none' };
 
+    const seasonTeams = teams.filter(t => t.seasonId === currentSeason?.id);
+    const canCreateMatch = seasonTeams.length >= 2;
+
     return (
         <View className="flex-1 bg-secondary p-4">
             {isSelectionMode ? (
@@ -201,8 +216,9 @@ export default function ManageMatches() {
                 </View>
             ) : (
                 <TouchableOpacity
-                    className="bg-primary p-4 rounded-xl flex-row justify-center items-center mb-4"
-                    onPress={() => openModal()}
+                    className={`p-4 rounded-xl flex-row justify-center items-center mb-4 ${canCreateMatch ? 'bg-primary' : 'bg-slate-300 opacity-50'}`}
+                    onPress={() => canCreateMatch ? openModal() : null}
+                    disabled={!canCreateMatch}
                 >
                     <Plus color="#fff" size={20} />
                     <Text className="text-white font-bold ml-2">Record Match Result</Text>

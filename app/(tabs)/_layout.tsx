@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { LayoutDashboard, Settings, Swords } from 'lucide-react-native';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Config } from '../../constants/Config';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -48,6 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
+          href: Config.isClientApp ? null : undefined,
           title: 'Settings',
           tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
         }}

@@ -4,8 +4,17 @@ import { ScrollView, Text, View } from 'react-native';
 import { Skeleton } from '../../../components/Skeleton';
 import { useLeague } from '../../../context/LeagueContext';
 
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
+
 export default function CurrentMatchScreen() {
-    const { matches, teams, players, currentSeason, isLoading } = useLeague();
+    const { matches, teams, players, currentSeason, isLoading, refreshData } = useLeague();
+
+    useFocusEffect(
+        useCallback(() => {
+            refreshData();
+        }, [])
+    );
 
     // Logic to find current match (latest or live) for the CURRENT SEASON
     const currentMatch = useMemo(() => {

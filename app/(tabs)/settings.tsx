@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
+import { Config } from '../../constants/Config';
 import { useAuth } from '../../context/AuthContext';
 import { useLeague } from '../../context/LeagueContext';
 
@@ -61,8 +62,12 @@ export default function SettingsScreen() {
                 <View className="flex-1 bg-secondary">
                     <View className="bg-white px-6 py-10 border-b border-slate-50/50 flex-row items-center justify-between">
                         <View>
-                            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">Organizer</Text>
-                            <Text className="text-3xl font-black text-slate-900 uppercase tracking-[4px]">Admin Panel</Text>
+                            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
+                                {Config.isClientApp ? 'Member' : 'Organizer'}
+                            </Text>
+                            <Text className="text-3xl font-black text-slate-900 uppercase tracking-[4px]">
+                                {Config.isClientApp ? 'Profile' : 'Admin Panel'}
+                            </Text>
                         </View>
                         <TouchableOpacity
                             onPress={handleLogout}
@@ -77,30 +82,34 @@ export default function SettingsScreen() {
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 40 }}
                     >
-                        <View className="mb-8">
-                            <Text className="text-slate-900 text-lg font-black mb-4 ml-1">Management</Text>
-                            <MenuItem
-                                title="Manage Teams"
-                                icon={Users}
-                                route="/admin/teams"
-                                color="#6366f1"
-                                disabled={!hasSeasonForYear}
-                            />
-                            <MenuItem
-                                title="Manage Players"
-                                icon={UserPlus}
-                                route="/admin/players"
-                                color="#10b981"
-                                disabled={!hasSeasonForYear}
-                            />
-                            <MenuItem title="Manage Seasons" icon={Calendar} route="/admin/seasons" color="#8b5cf6" />
-                        </View>
+                        {!Config.isClientApp && (
+                            <View className="mb-8">
+                                <Text className="text-slate-900 text-lg font-black mb-4 ml-1">Management</Text>
+                                <MenuItem
+                                    title="Manage Teams"
+                                    icon={Users}
+                                    route="/admin/teams"
+                                    color="#6366f1"
+                                    disabled={!hasSeasonForYear}
+                                />
+                                <MenuItem
+                                    title="Manage Players"
+                                    icon={UserPlus}
+                                    route="/admin/players"
+                                    color="#10b981"
+                                    disabled={!hasSeasonForYear}
+                                />
+                                <MenuItem title="Manage Seasons" icon={Calendar} route="/admin/seasons" color="#8b5cf6" />
+                            </View>
+                        )}
 
 
-                        <View className="mb-8">
-                            <Text className="text-slate-900 text-lg font-black mb-4 ml-1">Competition</Text>
-                            <MenuItem title="Enter Match Result" icon={ClipboardList} route="/admin/matches" color="#f59e0b" />
-                        </View>
+                        {!Config.isClientApp && (
+                            <View className="mb-8">
+                                <Text className="text-slate-900 text-lg font-black mb-4 ml-1">Competition</Text>
+                                <MenuItem title="Enter Match Result" icon={ClipboardList} route="/admin/matches" color="#f59e0b" />
+                            </View>
+                        )}
 
                         <View className="mt-4 p-6 bg-white rounded-3xl border border-slate-100 items-center">
                             <View className="w-12 h-12 rounded-full bg-slate-50 items-center justify-center mb-3">
@@ -121,16 +130,30 @@ export default function SettingsScreen() {
                         <View className="w-24 h-24 rounded-3xl bg-white shadow-md shadow-slate-100 items-center justify-center mb-8 border border-slate-50">
                             <ShieldCheck size={48} color="#cbd5e1" />
                         </View>
-                        <Text className="text-3xl font-black text-slate-900 mb-3 text-center">Restricted Access</Text>
-                        <Text className="text-slate-400 font-bold text-center mb-10 leading-6 px-4">
-                            The admin panel is exclusively for league organizers. Sign in to manage teams and matches.
+                        <Text className="text-3xl font-black text-slate-900 mb-3 text-center">
+                            {Config.isClientApp ? 'RVB FC' : 'Restricted Access'}
                         </Text>
-                        <TouchableOpacity
-                            className="bg-primary w-full py-5 rounded-2xl items-center shadow-md shadow-blue-100"
-                            onPress={() => router.push('/admin/login')}
-                        >
-                            <Text className="text-white font-black text-lg">Sign In as Admin</Text>
-                        </TouchableOpacity>
+                        <Text className="text-slate-400 font-bold text-center mb-10 leading-6 px-4">
+                            {Config.isClientApp
+                                ? 'Welcome to the official RVB FC app. View match results, stats, and standings.'
+                                : 'The admin panel is exclusively for league organizers. Sign in to manage teams and matches.'
+                            }
+                        </Text>
+
+                        {!Config.isClientApp && (
+                            <TouchableOpacity
+                                className="bg-primary w-full py-5 rounded-2xl items-center shadow-md shadow-blue-100"
+                                onPress={() => router.push('/admin/login')}
+                            >
+                                <Text className="text-white font-black text-lg">Sign In as Admin</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {Config.isClientApp && (
+                            <View className="bg-slate-100 px-4 py-2 rounded-lg">
+                                <Text className="text-slate-400 text-xs font-bold uppercase">Client Version 1.0.0</Text>
+                            </View>
+                        )}
                     </View>
                 </View>
             )}

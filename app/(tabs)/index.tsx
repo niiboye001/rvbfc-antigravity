@@ -24,6 +24,13 @@ export default function DashboardScreen() {
     setRefreshing(false);
   };
 
+  // Auto-refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [])
+  );
+
   // Check for missing season for current year
   useFocusEffect(
     useCallback(() => {

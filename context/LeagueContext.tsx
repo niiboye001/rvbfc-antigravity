@@ -44,7 +44,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         loadData();
 
-        // Real-time subscription for matches
+        // Real-time matches
         const matchSubscription = supabase
             .channel('matches-realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, async (payload) => {
@@ -88,8 +88,70 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
             })
             .subscribe();
 
+        // Real-time teams
+        const teamSubscription = supabase
+            .channel('teams-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, async (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    const newTeam = {
+                        id: payload.new.id,
+                        seasonId: payload.new.season_id,
+                        name: payload.new.name,
+                        initials: payload.new.initials,
+                        color: payload.new.color,
+                        logoUrl: payload.new.logo_url
+                    };
+                    setTeams(prev => [...prev, newTeam]);
+                } else if (payload.eventType === 'UPDATE') {
+                    setTeams(prev => prev.map(t => t.id === payload.new.id ? {
+                        id: payload.new.id,
+                        seasonId: payload.new.season_id,
+                        name: payload.new.name,
+                        initials: payload.new.initials,
+                        color: payload.new.color,
+                        logoUrl: payload.new.logo_url
+                    } : t));
+                } else if (payload.eventType === 'DELETE') {
+                    setTeams(prev => prev.filter(t => t.id !== payload.old.id));
+                }
+            })
+            .subscribe();
+
+        // Real-time players
+        const playerSubscription = supabase
+            .channel('players-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, async (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    const newPlayer = {
+                        id: payload.new.id,
+                        name: payload.new.name,
+                        teamId: payload.new.team_id,
+                        goals: payload.new.goals,
+                        assists: payload.new.assists,
+                        yellowCards: payload.new.yellow_cards,
+                        redCards: payload.new.red_cards
+                    };
+                    setPlayers(prev => [...prev, newPlayer]);
+                } else if (payload.eventType === 'UPDATE') {
+                    setPlayers(prev => prev.map(p => p.id === payload.new.id ? {
+                        id: payload.new.id,
+                        name: payload.new.name,
+                        teamId: payload.new.team_id,
+                        goals: payload.new.goals,
+                        assists: payload.new.assists,
+                        yellowCards: payload.new.yellow_cards,
+                        redCards: payload.new.red_cards
+                    } : p));
+                } else if (payload.eventType === 'DELETE') {
+                    setPlayers(prev => prev.filter(p => p.id !== payload.old.id));
+                }
+            })
+            .subscribe();
+
         return () => {
             matchSubscription.unsubscribe();
+            teamSubscription.unsubscribe();
+            playerSubscription.unsubscribe();
         };
     }, []);
 
