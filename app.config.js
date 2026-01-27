@@ -6,7 +6,7 @@ export default {
         slug: "rvbfc_antigravity",
         version: "1.0.0",
         orientation: "portrait",
-        icon: "./assets/images/client/icon.png",
+        icon: IS_CLIENT ? "./assets/images/client/icon.png" : "./assets/images/admin/icon.png",
         scheme: "rvbfcantigravity",
         userInterfaceStyle: "automatic",
         newArchEnabled: true,
@@ -20,7 +20,7 @@ export default {
         android: {
             adaptiveIcon: {
                 backgroundColor: "#E6F4FE",
-                foregroundImage: "./assets/images/client/android-icon-foreground.png",
+                foregroundImage: IS_CLIENT ? "./assets/images/client/android-icon-foreground.png" : "./assets/images/admin/android-icon-foreground.png",
                 backgroundImage: "./assets/images/android-icon-background.png", // Shared background
                 monochromeImage: "./assets/images/android-icon-monochrome.png"
             },
@@ -37,13 +37,10 @@ export default {
             [
                 "expo-splash-screen",
                 {
-                    "image": "./assets/images/client/splash-icon.png",
-                    "imageWidth": 200,
+                    "image": IS_CLIENT ? "./assets/images/client/splash-icon.png" : "./assets/images/admin/splash-icon.png",
+                    "imageWidth": 500,
                     "resizeMode": "contain",
-                    "backgroundColor": "#ffffff",
-                    "dark": {
-                        "backgroundColor": "#000000"
-                    }
+                    "backgroundColor": "#ffffff"
                 }
             ]
         ],
@@ -53,7 +50,7 @@ export default {
         },
         extra: {
             eas: {
-                projectId: "75bd7534-1d55-45b5-9870-770280d6a785"
+                projectId: "0212fa99-f2b6-47af-8f3b-e8fac25de2f7"
             }
         }
     }
