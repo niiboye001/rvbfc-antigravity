@@ -1,11 +1,11 @@
 import { ClipboardList, Info } from 'lucide-react-native';
-import { useMemo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Skeleton } from '../../../components/Skeleton';
+import { Config } from '../../../constants/Config';
 import { useLeague } from '../../../context/LeagueContext';
 
-import { useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { router, useFocusEffect } from 'expo-router';
 
 export default function CurrentMatchScreen() {
     const { matches, teams, players, currentSeason, isLoading, refreshData } = useLeague();
@@ -77,8 +77,51 @@ export default function CurrentMatchScreen() {
 
     if (!currentMatch) {
         return (
-            <View className="flex-1 bg-secondary justify-center items-center">
-                <Text className="text-slate-500">No match data available.</Text>
+            <View className="flex-1 bg-secondary justify-center items-center px-6">
+                <View className="bg-white p-8 rounded-3xl border border-blue-50 shadow-sm shadow-blue-100 items-center w-full">
+                    <View className="w-20 h-20 bg-blue-50 rounded-full items-center justify-center mb-6">
+                        <ClipboardList size={40} color="#3b82f6" />
+                    </View>
+                    <Text className="text-2xl font-black text-slate-900 text-center mb-3">
+                        Match Center
+                    </Text>
+
+                    {Config.isClientApp ? (
+                        <>
+                            <Text className="text-slate-500 text-center font-medium leading-6 mb-6">
+                                No active match found for this season.
+                                {"\n"}Check back on matchday!
+                            </Text>
+                            <View className="bg-blue-600 px-6 py-3 rounded-full shadow-lg shadow-blue-300">
+                                <Text className="text-white font-bold text-xs uppercase tracking-widest">
+                                    Standby
+                                </Text>
+                            </View>
+                        </>
+                    ) : (
+                        <>
+                            <Text className="text-slate-500 text-center font-medium leading-6 mb-6">
+                                {!currentSeason
+                                    ? "You need an active season before you can schedule matches."
+                                    : "No matches scheduled for this season yet."}
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (!currentSeason) {
+                                        router.replace('/admin/seasons');
+                                    } else {
+                                        router.replace('/admin/matches');
+                                    }
+                                }}
+                                className="bg-blue-600 px-8 py-4 rounded-2xl shadow-lg shadow-blue-300 active:scale-95"
+                            >
+                                <Text className="text-white font-black text-sm uppercase tracking-widest">
+                                    {!currentSeason ? "Create Season" : "Schedule Match"}
+                                </Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </View>
             </View>
         );
     }
