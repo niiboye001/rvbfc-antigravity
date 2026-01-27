@@ -38,9 +38,12 @@ export default {
                 "expo-splash-screen",
                 {
                     "image": IS_CLIENT ? "./assets/images/client/splash-icon.png" : "./assets/images/admin/splash-icon.png",
-                    "imageWidth": 500,
+                    "imageWidth": 350,
                     "resizeMode": "contain",
-                    "backgroundColor": "#ffffff"
+                    "backgroundColor": "#ffffff",
+                    "dark": {
+                        "backgroundColor": "#000000"
+                    }
                 }
             ]
         ],

@@ -22,12 +22,14 @@ function RootNavigator() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-blue-600">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <Image
-          source={require('../assets/images/client/splash-icon.png')}
-          style={{ width: 150, height: 150, resizeMode: 'contain', marginBottom: 20 }}
+          source={Config.isClientApp
+            ? require('../assets/images/client/splash-icon.png')
+            : require('../assets/images/admin/splash-icon.png')}
+          style={{ width: 350, height: 350, resizeMode: 'contain', marginBottom: 20 }}
         />
-        <ActivityIndicator size="large" color="#ffffff" />
+        <ActivityIndicator size="large" className="text-black dark:text-white" />
       </View>
     );
   }
