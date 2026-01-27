@@ -7,26 +7,34 @@
             "developmentClient": true,
             "distribution": "internal",
             "env": {
-                "EXPO_PUBLIC_APP_VARIANT": "admin"
+                "EXPO_PUBLIC_APP_VARIANT": "admin",
+                "EXPO_PUBLIC_SUPABASE_URL": "https://ucmyyyqxkpakxtwutegw.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_H4LBSrZ98EsjNF2FKg6gCg_UI-25MKS"
             }
         },
         "development-client": {
             "developmentClient": true,
             "distribution": "internal",
             "env": {
-                "EXPO_PUBLIC_APP_VARIANT": "client"
+                "EXPO_PUBLIC_APP_VARIANT": "client",
+                "EXPO_PUBLIC_SUPABASE_URL": "https://ucmyyyqxkpakxtwutegw.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_H4LBSrZ98EsjNF2FKg6gCg_UI-25MKS"
             }
         },
         "preview": {
             "distribution": "internal",
             "env": {
-                "EXPO_PUBLIC_APP_VARIANT": "admin"
+                "EXPO_PUBLIC_APP_VARIANT": "admin",
+                "EXPO_PUBLIC_SUPABASE_URL": "https://ucmyyyqxkpakxtwutegw.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_H4LBSrZ98EsjNF2FKg6gCg_UI-25MKS"
             }
         },
         "preview-client": {
             "distribution": "internal",
             "env": {
-                "EXPO_PUBLIC_APP_VARIANT": "client"
+                "EXPO_PUBLIC_APP_VARIANT": "client",
+                "EXPO_PUBLIC_SUPABASE_URL": "https://ucmyyyqxkpakxtwutegw.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_H4LBSrZ98EsjNF2FKg6gCg_UI-25MKS"
             }
         },
         "production": {
@@ -35,7 +43,9 @@
                 "image": "latest"
             },
             "env": {
-                "EXPO_PUBLIC_APP_VARIANT": "admin"
+                "EXPO_PUBLIC_APP_VARIANT": "admin",
+                "EXPO_PUBLIC_SUPABASE_URL": "https://ucmyyyqxkpakxtwutegw.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_H4LBSrZ98EsjNF2FKg6gCg_UI-25MKS"
             }
         },
         "production-client": {
@@ -44,7 +54,9 @@
                 "image": "latest"
             },
             "env": {
-                "EXPO_PUBLIC_APP_VARIANT": "client"
+                "EXPO_PUBLIC_APP_VARIANT": "client",
+                "EXPO_PUBLIC_SUPABASE_URL": "https://ucmyyyqxkpakxtwutegw.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_H4LBSrZ98EsjNF2FKg6gCg_UI-25MKS"
             }
         }
     },
