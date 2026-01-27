@@ -131,11 +131,11 @@ export default function SettingsScreen() {
                             <ShieldCheck size={48} color="#cbd5e1" />
                         </View>
                         <Text className="text-3xl font-black text-slate-900 mb-3 text-center">
-                            {Config.isClientApp ? 'RVB FC' : 'Restricted Access'}
+                            {Config.isClientApp ? 'Oneness FC' : 'Restricted Access'}
                         </Text>
                         <Text className="text-slate-400 font-bold text-center mb-10 leading-6 px-4">
                             {Config.isClientApp
-                                ? 'Welcome to the official RVB FC app. View match results, stats, and standings.'
+                                ? 'Welcome to the official Oneness FC app. View match results, stats, and standings.'
                                 : 'The admin panel is exclusively for league organizers. Sign in to manage teams and matches.'
                             }
                         </Text>

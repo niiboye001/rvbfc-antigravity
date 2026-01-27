@@ -85,7 +85,7 @@ export default function LoginScreen() {
                     <Text className="text-slate-400 mt-2 text-center px-8 font-medium">
                         {isResetting
                             ? 'Enter your email to receive reset instructions.'
-                            : 'Enter your credentials to manage the RvB FC League.'}
+                            : 'Enter your credentials to manage the Oneness FC League.'}
                     </Text>
                 </View>
 
@@ -97,7 +97,7 @@ export default function LoginScreen() {
                                 <Mail size={20} color="#94a3b8" />
                                 <TextInput
                                     className="flex-1 text-slate-800 ml-3 font-bold text-base"
-                                    placeholder="admin@rvbfc.com"
+                                    placeholder="admin@onenessfc.com"
                                     placeholderTextColor="#cbd5e1"
                                     autoCapitalize="none"
                                     keyboardType="email-address"
@@ -170,7 +170,7 @@ export default function LoginScreen() {
 
                     <View className="mt-auto py-10">
                         <Text className="text-center text-slate-400 text-[10px] font-black uppercase tracking-[2px]">
-                            RvB FC League Management © 2025
+                            Oneness FC League Management © 2025
                         </Text>
                     </View>
                 </View>

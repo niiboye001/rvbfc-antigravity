@@ -2,7 +2,7 @@ const IS_CLIENT = process.env.EXPO_PUBLIC_APP_VARIANT === 'client';
 
 export default {
     expo: {
-        name: IS_CLIENT ? "RVB FC" : "RVB Admin",
+        name: IS_CLIENT ? "Oneness FC" : "Oneness Admin",
         slug: "rvbfc_antigravity",
         version: "1.0.0",
         orientation: "portrait",

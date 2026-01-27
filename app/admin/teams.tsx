@@ -415,7 +415,7 @@ export default function ManageTeams() {
                             <Text className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Initials (Logo)</Text>
                             <TextInput
                                 className="bg-white border border-slate-300 p-4 rounded-xl mb-6 text-slate-800 font-medium"
-                                placeholder="e.g. RvB"
+                                placeholder="e.g. Oneness"
                                 placeholderTextColor="#94a3b8"
                                 value={initials}
                                 onChangeText={setInitials}
