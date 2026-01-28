@@ -89,8 +89,8 @@ export default function CurrentMatchScreen() {
                     {Config.isClientApp ? (
                         <>
                             <Text className="text-slate-500 text-center font-medium leading-6 mb-6">
-                                No active match found for this season.
-                                {"\n"}Check back on matchday!
+                                No matches have been recorded yet for this season.
+                                {"\n"}Check back later!
                             </Text>
                             <View className="bg-blue-600 px-6 py-3 rounded-full shadow-lg shadow-blue-300">
                                 <Text className="text-white font-bold text-xs uppercase tracking-widest">
@@ -101,22 +101,14 @@ export default function CurrentMatchScreen() {
                     ) : (
                         <>
                             <Text className="text-slate-500 text-center font-medium leading-6 mb-6">
-                                {!currentSeason
-                                    ? "You need an active season before you can schedule matches."
-                                    : "No matches scheduled for this season yet."}
+                                No matches scheduled for this season yet.
                             </Text>
                             <TouchableOpacity
-                                onPress={() => {
-                                    if (!currentSeason) {
-                                        router.replace('/admin/seasons');
-                                    } else {
-                                        router.replace('/admin/matches');
-                                    }
-                                }}
+                                onPress={() => router.push('/admin/matches')}
                                 className="bg-blue-600 px-8 py-4 rounded-2xl shadow-lg shadow-blue-300 active:scale-95"
                             >
                                 <Text className="text-white font-black text-sm uppercase tracking-widest">
-                                    {!currentSeason ? "Create Season" : "Schedule Match"}
+                                    Schedule Match
                                 </Text>
                             </TouchableOpacity>
                         </>

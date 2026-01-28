@@ -32,7 +32,7 @@ The `eas.json` file defines several build profiles for different environments an
 
 To build an APK for the **Admin** app:
 ```bash
-eas build --profile production --platform android
+n
 ```
 
 To build an APK for the **Client** app:
@@ -43,7 +43,7 @@ eas build --profile production-client --platform android
 ### Building for Internal Testing (Preview)
 To build for internal distribution:
 ```bash
-eas build --profile preview --platform android
+eas build --profile production --platform android
 ```
 
 ## iOS Deployment
