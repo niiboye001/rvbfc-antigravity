@@ -1,4 +1,4 @@
--- RvbFC Antigravity Database Integrity & Security Script
+-- Oneness FC Antigravity Database Integrity & Security Script
 -- Run this in the Supabase SQL Editor to enforce data consistency.
 
 -- 1. DROP EXISTING CONSTRAINTS (To avoid errors when re-applying)

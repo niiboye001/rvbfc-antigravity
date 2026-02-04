@@ -10,12 +10,12 @@ Navigate to: **Authentication** (icon on the left) -> **URL Configuration**.
 
 ### Site URL
 -   **Current Value**: `http://localhost:3000` (likely)
--   **New Value**: `rvbfcantigravity://`
+-   **New Value**: `onenessfc://`
 -   *Action*: Change this and click **Save**.
 
 ### Redirect URLs
 -   **Action**: Click **Add URL**.
--   **Value**: `rvbfcantigravity://**`
+-   **Value**: `onenessfc://**`
 -   *Action*: Click **Add**, then click **Save**.
 
 ## 3. Verify

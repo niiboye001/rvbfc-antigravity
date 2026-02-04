@@ -5,7 +5,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { CountingText } from '../../components/CountingText';
 import StatsCard from '../../components/StatsCard';
 import { Config } from '../../constants/Config';
@@ -16,7 +15,6 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { teams, players, matches, seasons, currentSeason, refreshData, isLoading } = useLeague();
   const [refreshing, setRefreshing] = useState(false);
-  const [seasonAlertVisible, setSeasonAlertVisible] = useState(false);
 
   const onRefresh = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -35,16 +33,7 @@ export default function DashboardScreen() {
     }, [])
   );
 
-  // Check for missing season for current year
-  useFocusEffect(
-    useCallback(() => {
-      if (isLoading) return;
 
-      if (!hasSeasonForYear && !Config.isClientApp) {
-        setSeasonAlertVisible(true);
-      }
-    }, [seasons, isLoading, hasSeasonForYear])
-  );
 
   // Stats Hook (Refactored)
   const { topScorerData, topAssisterData, chartData, sortedSeasons, sortedTeams, currentMatch } = useLeagueStats();
@@ -367,19 +356,7 @@ export default function DashboardScreen() {
         )}
       </ScrollView>
 
-      <ConfirmationModal
-        visible={seasonAlertVisible}
-        title="Action Required"
-        message={`No season found for ${new Date().getFullYear()}. Please create one in Admin to start managing your league.`}
-        confirmText="Go to Admin"
-        cancelText="Later"
-        onConfirm={() => {
-          setSeasonAlertVisible(false);
-          router.push('/admin/seasons');
-        }}
-        onCancel={() => setSeasonAlertVisible(false)}
-        type="info"
-      />
+
     </SafeAreaView>
   );
 }

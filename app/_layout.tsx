@@ -10,6 +10,7 @@ import "./global.css";
 import { Config } from '../constants/Config';
 import { AuthProvider } from '../context/AuthContext';
 import { LeagueProvider, useLeague } from '../context/LeagueContext';
+import { supabase } from '../services/supabase';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,6 +20,18 @@ export const unstable_settings = {
 
 function RootNavigator() {
   const { isLoading } = useLeague();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        router.push('/reset-password');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -42,6 +55,7 @@ function RootNavigator() {
       )}
       <Stack.Screen name="season/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="reset-password" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
     </Stack>
   );

@@ -28,11 +28,9 @@ The `eas.json` file defines several build profiles for different environments an
 
 ## Android Deployment
 
-### Building an APK (Production)
-
 To build an APK for the **Admin** app:
 ```bash
-n
+eas build --profile production --platform android
 ```
 
 To build an APK for the **Client** app:
@@ -43,8 +41,32 @@ eas build --profile production-client --platform android
 ### Building for Internal Testing (Preview)
 To build for internal distribution:
 ```bash
-eas build --profile production --platform android
+eas build --profile preview --platform android
 ```
+
+## Building in Android Studio
+
+If you prefer to build locally using Android Studio:
+
+1.  **Open Folder**: Open the `/android` folder in Android Studio.
+2.  **Wait for Sync**: Let Gradle sync finish. Android Studio will automatically generate your `local.properties` file.
+
+### Building a Release APK (Production)
+To get the optimized, release version for sharing:
+
+1.  **Switch Variant**: 
+    -   In Android Studio, go to **View -> Tool Windows -> Build Variants**.
+    -   Change the **Active Build Variant** for `:app` from `debug` to **`release`**.
+2.  **Sync**: Gradle will re-sync for the release configuration.
+3.  **Generate APK**:
+    -   Go to **Build -> Build Bundle(s) / APK(s) -> Build APK(s)**.
+    -   Android Studio will bundle the JavaScript and compile the production code.
+4.  **Locate**: Click "Locate" on the notification to find `app-release.apk`.
+
+> [!TIP]
+> This APK is signed with a debug key so it can be installed on any phone for testing, but it cannot be uploaded to the Play Store.
+
+### Switching App Variants (Admin vs. Client)
 
 ## iOS Deployment
 

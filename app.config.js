@@ -3,16 +3,16 @@ const IS_CLIENT = process.env.EXPO_PUBLIC_APP_VARIANT === 'client';
 export default {
     expo: {
         name: IS_CLIENT ? "Oneness FC" : "Oneness Admin",
-        slug: "rvbfc_antigravity",
+        slug: IS_CLIENT ? "Oneness-client" : "Oneness-admin",
         version: "1.0.0",
         orientation: "portrait",
         icon: IS_CLIENT ? "./assets/images/client/icon.png" : "./assets/images/admin/icon.png",
-        scheme: "rvbfcantigravity",
+        scheme: "onenessfc",
         userInterfaceStyle: "automatic",
         newArchEnabled: true,
         ios: {
             supportsTablet: true,
-            bundleIdentifier: IS_CLIENT ? "com.rvbfc.client" : "com.rvbfc.admin",
+            bundleIdentifier: IS_CLIENT ? "com.onenessfc.client" : "com.onenessfc.admin",
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false
             }
@@ -24,7 +24,7 @@ export default {
                 backgroundImage: "./assets/images/android-icon-background.png", // Shared background
                 monochromeImage: "./assets/images/android-icon-monochrome.png"
             },
-            package: IS_CLIENT ? "com.rvbfc.client" : "com.rvbfc.admin",
+            package: IS_CLIENT ? "com.onenessfc.client" : "com.onenessfc.admin",
             edgeToEdgeEnabled: true,
             predictiveBackGestureEnabled: false
         },

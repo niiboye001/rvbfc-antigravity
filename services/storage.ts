@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
-    TEAMS: 'rvbfc_teams',
-    PLAYERS: 'rvbfc_players',
-    MATCHES: 'rvbfc_matches',
-    SEASONS: 'rvbfc_seasons',
+    TEAMS: 'oneness_teams',
+    PLAYERS: 'oneness_players',
+    MATCHES: 'oneness_matches',
+    SEASONS: 'oneness_seasons',
 };
 
 export const storage = {
