@@ -24,7 +24,7 @@ export default {
                 backgroundImage: "./assets/images/android-icon-background.png", // Shared background
                 monochromeImage: "./assets/images/android-icon-monochrome.png"
             },
-            package: IS_CLIENT ? "com.rvbfc.client" : "com.rvbfc.admin",
+            package: "com.onenessfc.admin",
             edgeToEdgeEnabled: true,
             predictiveBackGestureEnabled: false
         },
